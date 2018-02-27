@@ -1,0 +1,83 @@
+sales_orders=SalesOrder.find_open_orders
+builder=sales_orders[0].xml_builder
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
+code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+Fishbowl::Connection.close
+
+
+sales_orders=SalesOrder.find_open_orders
+sales_orders.each do |sales_order|
+    puts "SALES ORDER: #{sales_order.num}"
+end
+
+
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
+builder = Nokogiri::XML::Builder.new do |xml|
+  xml.request {
+    xml. InvQtyRq {
+      xml.PartNum 'BB2001'
+    }
+  }
+end
+code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+Fishbowl::Connection.close
+
+*** GetSoList
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
+builder = Nokogiri::XML::Builder.new do |xml|
+  xml.request {
+    xml. GetSOListRq {
+      xml.Status 'All Open'
+    }
+  }
+end
+code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+Fishbowl::Connection.close
+
+
+
+request=Nokogiri::XML::Builder.new do |xml|
+      xml.request {
+        xml.VoidSORq {
+          xml.SONumber 50053
+        }
+      }
+    end
+    
+    Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+    
+    
+    
+
+request=Nokogiri::XML::Builder.new do |xml|
+        xml.request {
+            xml.AddSOItemRq {
+                xml.OrderNum 50055
+                xml.SalesOrderItem {
+                    xml.ID -1
+                    xml.ProductNumber 'BTY100-Core'
+                    xml.SOID 94
+                    xml.Description 'Battery Pack'
+                    xml.Taxable true
+                    xml.Quantity 1
+                    xml.ProductPrice -95.00
+                    xml.TotalPrice -95.00
+                    xml.UOMCode 'ea'
+                    xml.ItemType 20
+                    xml.Status 10
+                    xml.QuickBooksClassName 'Salt Lake City'
+                    xml.DateScheduledFulfillment '2018-05-18 14 02 21'
+                    xml.NewItemFlag false
+                }
+            }
+        }
+    end
+
+Fishbowl::Objects::BaseObject.new.send_request(request, 'AddSOItemRs')
+
+
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
