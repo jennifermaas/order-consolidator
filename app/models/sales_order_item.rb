@@ -1,12 +1,13 @@
-class SalesOrderItem
-    attr_accessor :num,:product,:qty_to_fulfill,:uom_id, :xml
-    
-    def initialize(args)
-        @num=args[:num]
-        @product=Product.new(num: args[:product_num]) if args[:product_num]
-        @qty_to_fulfill=args[:qty_to_fulfill]
-        @uom_id=args[:uom_id]
-        @xml=args[:xml]
+class SalesOrderItem < ActiveRecord::Base
+    attr_accessor :product_num
+    belongs_to :product
+    after_create :create_product
+    belongs_to :sales_order
+
+    def create_product
+        puts "IN CREATE PRODUCT self.product_num: #{self.product_num}, self.product: #{self.product}"
+        self.product=Product.create(num: product_num) if self.product_num && !self.product
+        self.save
     end
     
     def is_fully_pickable?

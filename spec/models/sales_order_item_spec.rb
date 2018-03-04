@@ -8,30 +8,40 @@ RSpec.describe SalesOrderItem, type: :model do
         allow(Product).to receive(:get_inventory_xml_from_fishbowl).and_return(inventory_response_xml)
     end
     
-    describe "initialize" do
-        it "sets num,product,qty_to_fulfill, uom_id, xml" do
-            sales_order_item=SalesOrderItem.new(num: '1',product_num: '123', uom_id: 1,qty_to_fulfill: 1, xml: 'test')
-            expect(sales_order_item.num).to eq('1')
-            expect(sales_order_item.product.num).to eq('123')
-            expect(sales_order_item.qty_to_fulfill).to eq(1)
-            expect(sales_order_item.uom_id).to eq(1)
-            expect(sales_order_item.xml).to eq('test')
+    describe "create" do
+        
+        it "creates product if there is a product number and product isn't specified" do
+            sales_order_item=SalesOrderItem.create product_num: '123'
+            expect(sales_order_item.product.qty_pickable).to be(68)
+        end
+        
+        it "does not create a product if the product is specified" do 
+            p=create(:product, qty_pickable: 2)
+            sales_order_item=SalesOrderItem.create product: p
+            expect(sales_order_item.product).to be(p)
+        end
+        
+        it "does not create a product if there is no product number" do
+            sales_order_item=SalesOrderItem.create 
+            expect(sales_order_item.product).to be(nil)
         end
     end
 
     
     describe "is_fully_pickable?" do
         
+        let(:product_10) { create(:product,qty_pickable: 10) }
+        
         it "returns true when qty_to_fulfill < qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: '123',qty_to_fulfill: 1,uom_id: 1, xml: "test")         
+            sales_order_item = SalesOrderItem.new(num: '1', product: product_10,qty_to_fulfill: 1)         
             expect(sales_order_item.is_fully_pickable?).to eq(true)
         end
         it "returns true when qty_to_fulfill == qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: '123',qty_to_fulfill: 68,uom_id: 1, xml: "test")           
+            sales_order_item = SalesOrderItem.new(num: '1', product: product_10,qty_to_fulfill: 10)           
             expect(sales_order_item.is_fully_pickable?).to eq(true)
         end
         it "returns false when qty_to_fulfill > qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: '123',qty_to_fulfill: 69, uom_id: 1, xml: "test")           
+            sales_order_item = SalesOrderItem.new(num: '1', product: product_10,qty_to_fulfill: 12)           
             expect(sales_order_item.is_fully_pickable?).to eq(false)
         end
     end

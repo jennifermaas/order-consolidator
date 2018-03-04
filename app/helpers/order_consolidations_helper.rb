@@ -1,0 +1,2 @@
+module OrderConsolidationsHelper
+end

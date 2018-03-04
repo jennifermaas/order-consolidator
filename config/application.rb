@@ -11,7 +11,7 @@ module Workspace
     # initializes Fishbowl Connection
     Fishbowl.configure do |config|
       config.username = "admin"
-      config.password = "admin"
+      config.password = "litaadmin"
       config.host = "35.169.125.206"
       config.app_id = "1234"
       config.app_name = "Fishbowl Ruby Gem"

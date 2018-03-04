@@ -1,0 +1,14 @@
+<table>
+    <tr>
+        <th>Product Number</th>
+        <th>Qty to Fulfill</th>
+        <th>Qty Pickable</th>
+    </tr>
+    <% sales_order.sales_order_items.each do |sales_order_item| %>
+        <tr>
+            <td><%= sales_order_item.product.num %></td>
+            <td><%= sales_order_item.qty_to_fulfill %></td>
+            <td><%= sales_order_item.product.qty_pickable %></td>
+        </tr>
+    <% end %>
+</table>

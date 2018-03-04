@@ -1,6 +1,7 @@
-class SalesOrder
+class SalesOrder < ActiveRecord::Base
   
-    attr_accessor :num,:sales_order_items,:customer_id,:customer_name :xml
+    belongs_to :customer
+    has_many :sales_order_items, dependent: :destroy
    
     #def self.find_by_id(param)
     #    Fishbowl::Connection.connect
@@ -24,44 +25,6 @@ class SalesOrder
         end
     end
     
-    # Finds open issued orders
-    def self.find_open_orders()
-        Fishbowl::Connection.connect
-        Fishbowl::Connection.login
-        builder = Nokogiri::XML::Builder.new do |xml|
-          xml.request {
-            xml. GetSOListRq {
-              xml.Status 'All Open'
-            }
-          }
-        end
-        code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
-        Fishbowl::Connection.close
-        sales_orders=[]
-        response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            num=sales_order_xml.xpath("Number").inner_html
-            customer_id=sales_order_xml.xpath("CustomerID").inner_html
-            customer_name=sales_order_xml.xpath("CustomerName").inner_html
-            sales_order = SalesOrder.new(num: num, customer_id: customer_id,xml: sales_order_xml, customer_name: customer_name )
-            sales_order_xml.xpath("Items//SalesOrderItem").each do |sales_order_item_xml|
-                num=sales_order_item_xml.xpath("ID").inner_html
-                product_num=sales_order_item_xml.xpath("ProductNumber").inner_html
-                qty_to_fulfill=sales_order_item_xml.xpath("Quantity").inner_html
-                sales_order_item=SalesOrderItem.new(num: num,product_num: product_num,qty_to_fulfill: qty_to_fulfill, xml: sales_order_item_xml)
-                sales_order.sales_order_items << sales_order_item
-            end
-            sales_orders << sales_order
-        end
-        return sales_orders 
-    end
-    
-    
-    def initialize(args)
-        @num=args[:num]
-        @customer_id=args[:customer_id]
-        @sales_order_items = []
-        @xml=args[:xml]
-    end
     
     def xml_builder
         # Sales Order Fields
