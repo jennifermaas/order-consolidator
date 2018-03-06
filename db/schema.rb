@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180304205252) do
+ActiveRecord::Schema.define(version: 20180305225442) do
 
   create_table "customers", force: :cascade do |t|
     t.integer  "fb_id",                  limit: 4
@@ -35,19 +35,21 @@ ActiveRecord::Schema.define(version: 20180304205252) do
   end
 
   create_table "order_consolidations", force: :cascade do |t|
-    t.datetime "created_at",                      null: false
-    t.datetime "updated_at",                      null: false
-    t.text     "inventory_hash", limit: 16777215
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.text     "inventory",  limit: 16777215
   end
 
   create_table "products", force: :cascade do |t|
-    t.string   "num",           limit: 255
-    t.integer  "qty_on_hand",   limit: 4
-    t.integer  "qty_available", limit: 4
-    t.integer  "qty_pickable",  limit: 4
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
+    t.string   "num",                    limit: 255
+    t.integer  "qty_pickable_from_fb",   limit: 4
+    t.integer  "qty_pickable",           limit: 4
+    t.integer  "order_consolidation_id", limit: 4
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
   end
+
+  add_index "products", ["order_consolidation_id"], name: "index_products_on_order_consolidation_id", using: :btree
 
   create_table "sales_order_items", force: :cascade do |t|
     t.string   "num",            limit: 255
@@ -58,6 +60,7 @@ ActiveRecord::Schema.define(version: 20180304205252) do
     t.string   "uom_id",         limit: 255
     t.datetime "created_at",                      null: false
     t.datetime "updated_at",                      null: false
+    t.string   "product_num",    limit: 255
   end
 
   add_index "sales_order_items", ["product_id"], name: "index_sales_order_items_on_product_id", using: :btree
@@ -73,6 +76,7 @@ ActiveRecord::Schema.define(version: 20180304205252) do
 
   add_index "sales_orders", ["customer_id"], name: "index_sales_orders_on_customer_id", using: :btree
 
+  add_foreign_key "products", "order_consolidations"
   add_foreign_key "sales_order_items", "products"
   add_foreign_key "sales_order_items", "sales_orders"
   add_foreign_key "sales_orders", "customers"

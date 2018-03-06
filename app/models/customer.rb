@@ -3,9 +3,9 @@ class Customer < ActiveRecord::Base
     has_many :sales_order_items, :through => :sales_orders
     belongs_to :order_consolidation
     validates_presence_of :fb_id
-    validates_presence_of :name
-    has_one :pickable_order
-    has_one :not_pickable_order
+    #validates_presence_of :name
+    belongs_to :pickable_order, class_name: 'SalesOrder', foreign_key: "pickable_order_id", dependent: :destroy
+    belongs_to :not_pickable_order, class_name: 'SalesOrder', foreign_key: "not_pickable_order_id", dependent: :destroy
     
     def update_fishbowl
         if needs_consolidation?
@@ -51,7 +51,7 @@ class Customer < ActiveRecord::Base
     
     def line_items_need_consolidation?
         sales_order_items.each do |sales_order_item|
-            matching_items = sales_order_items.find_all {|x| x.product.num == sales_order_item.product.num}
+            matching_items = sales_order_items.find_all {|x| x.product_num == sales_order_item.product_num}
             return true if matching_items.length > 1
         end
         return false
@@ -60,11 +60,11 @@ class Customer < ActiveRecord::Base
     def consolidated_line_items
         items = []
         sales_order_items.each do |sales_order_item|
-            existing_sales_order_item = items.find {|x| x.product.num == sales_order_item.product.num}
+            existing_sales_order_item = items.find {|x| x.product_num == sales_order_item.product_num}
             if existing_sales_order_item
                 existing_sales_order_item.qty_to_fulfill += sales_order_item.qty_to_fulfill
             else
-                items << sales_order_item
+                items << sales_order_item.dup
             end
         end
         return items
@@ -73,63 +73,33 @@ class Customer < ActiveRecord::Base
     def consolidate_orders
         sales_order_items = consolidated_line_items
         if sales_order_items
-            pickable_order=SalesOrder.create num: '1' 
-            not_pickable_order=SalesOrder.create num: '2' 
+            pickable_order=SalesOrder.create
+            not_pickable_order=SalesOrder.create
             sales_order_items.each do |sales_order_item|
-                puts "****IN consolidated_orders****\n"
-                puts "sales_order_item.qty_to_fulfill: #{sales_order_item.qty_to_fulfill}\n"
-                puts "sales_order_item.product.qty_pickable: #{sales_order_item.product.qty_pickable}\n"
-                
-                if sales_order_item.product.qty_pickable == 0
-                    not_pickable_order.sales_order_items << sales_order_item.dup
-                elsif sales_order_item.qty_to_fulfill <= sales_order_item.product.qty_pickable
-                   pickable_order.sales_order_items << sales_order_item.dup
+                if sales_order_item.qty_pickable == 0
+                    item=sales_order_item.dup
+                    item.save
+                    not_pickable_order.sales_order_items << item
+                elsif sales_order_item.qty_to_fulfill <= sales_order_item.qty_pickable
+                   item=sales_order_item.dup
+                   item.save
+                   pickable_order.sales_order_items << item
+                   self.order_consolidation.decrement_inventory(product_num: sales_order_item.product_num, qty: sales_order_item.qty_to_fulfill)
                 else
-                    pickable_sales_order_item = SalesOrderItem.create(num: sales_order_item.num,qty_to_fulfill: sales_order_item.product.qty_pickable, product: sales_order_item.product, uom_id: sales_order_item.uom_id)
-                    pickable_sales_order_item.product=sales_order_item.product
-                    not_pickable_sales_order_item = SalesOrderItem.create(num: sales_order_item.num,qty_to_fulfill: (sales_order_item.qty_to_fulfill - sales_order_item.product.qty_pickable), uom_id: sales_order_item.uom_id, product: sales_order_item.product)
-                    not_pickable_sales_order_item.product=sales_order_item.product
-                    puts "PICKABLE SALES ORDER ITEM: #{pickable_sales_order_item.inspect}"
-                    puts "NOT PICKABLE SALES ORDER ITEM: #{not_pickable_sales_order_item.inspect}"
+                    pickable_sales_order_item = SalesOrderItem.create(num: sales_order_item.num,qty_to_fulfill: sales_order_item.qty_pickable, product_num: sales_order_item.product_num, uom_id: sales_order_item.uom_id)
+                    not_pickable_sales_order_item = SalesOrderItem.create(num: sales_order_item.num,qty_to_fulfill: (sales_order_item.qty_to_fulfill - sales_order_item.qty_pickable), uom_id: sales_order_item.uom_id, product_num: sales_order_item.product_num)
                     pickable_order.sales_order_items << pickable_sales_order_item
                     not_pickable_order.sales_order_items << not_pickable_sales_order_item
+                    self.order_consolidation.decrement_inventory(product_num: pickable_sales_order_item.product_num, qty: pickable_sales_order_item.qty_to_fulfill)
                 end
             end
-            return {pickable: pickable_order, not_pickable: not_pickable_order}
+            self.pickable_order = pickable_order
+            self.not_pickable_order = not_pickable_order
+            self.save
         else
             return false
         end
         
-    end
-
-    
-    def create_sales_orders
-        Fishbowl::Connection.connect
-        Fishbowl::Connection.login
-        builder = Nokogiri::XML::Builder.new do |xml|
-          xml.request {
-            xml. GetSOListRq {
-              xml.Status 'All Open'
-              xml.CustomerName self.name
-            }
-          }
-        end
-        code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
-        Fishbowl::Connection.close
-        response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            num=sales_order_xml.xpath("Number").inner_html
-            customer_id=sales_order_xml.xpath("CustomerID").inner_html
-            customer_name=sales_order_xml.xpath("CustomerName").inner_html
-            sales_order = SalesOrder.create(num: num, customer: self,xml: sales_order_xml.to_s)
-            sales_order_xml.xpath("Items//SalesOrderItem").each do |sales_order_item_xml|
-                num=sales_order_item_xml.xpath("ID").inner_html
-                product_num=sales_order_item_xml.xpath("ProductNumber").inner_html
-                qty_to_fulfill=sales_order_item_xml.xpath("Quantity").inner_html
-                sales_order_item=SalesOrderItem.create(num: num,product_num: product_num,qty_to_fulfill: qty_to_fulfill, xml: sales_order_item_xml.to_s)
-                sales_order.sales_order_items << sales_order_item
-            end
-            self.sales_orders << sales_order
-        end
     end
     
     def self.create_from_open_orders(order_consolidation)

@@ -1,7 +1,7 @@
 <h1>Order Consolidation <%= @order_consolidation.id %></h1>
 <ul>
     <li>
-        <% @order_consolidation.customers[1..6].each do |customer| %>
+        <% @order_consolidation.customers[0..50].each do |customer| %>
             <h2><%= "#{customer.name} (id: #{customer.id})" %></h2>
             <h3>Old Orders (<%= customer.sales_orders.count %>)</h3>
             <ul>
@@ -12,8 +12,8 @@
             <% if customer.needs_consolidation? %>
                 <h3>New Orders</h3>
                 <ul>
-                    <li>pickable: <%= render partial: "sales_order", object: customer.pickable_order %></li>  
-                    <li>not pickable: <%= render partial: "sales_order", object: customer.not_pickable_order %></li>  
+                    <li>pickable: <%= render partial: "sales_order", object: customer.pickable_order if customer.pickable_order %></li>  
+                    <li>not pickable: <%= render partial: "sales_order", object: customer.not_pickable_order if customer.not_pickable_order %></li>  
                 </ul>
             <% else %>
                 <p>Doesn't need consolidation</p>

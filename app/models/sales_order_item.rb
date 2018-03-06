@@ -1,17 +1,16 @@
 class SalesOrderItem < ActiveRecord::Base
-    attr_accessor :product_num
-    belongs_to :product
-    after_create :create_product
     belongs_to :sales_order
-
-    def create_product
-        puts "IN CREATE PRODUCT self.product_num: #{self.product_num}, self.product: #{self.product}"
-        self.product=Product.create(num: product_num) if self.product_num && !self.product
-        self.save
-    end
+    validates_presence_of :product_num
+    validates :qty_to_fulfill, numericality: { greater_than_or_equal_to: 0 }, on: :update
+    
     
     def is_fully_pickable?
-        qty_to_fulfill <= product.qty_pickable
+        qty_to_fulfill <= qty_pickable
+    end
+    
+    def qty_pickable
+        product = sales_order.customer.order_consolidation.products.find_by_num(product_num)
+        product ? product.qty_pickable : 0
     end
     
     def xml_hash

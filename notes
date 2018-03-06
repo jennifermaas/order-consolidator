@@ -1,3 +1,25 @@
+*** Get SOs with Query
+        Fishbowl::Connection.connect
+        Fishbowl::Connection.login
+        builder = Nokogiri::XML::Builder.new do |xml|
+          xml.request {
+            xml. ExecuteQueryRq {
+              xml.Query "SELECT So.customerId, So.num, SoItem.productNum, SoItem.qtyToFulfill FROM So INNER JOIN SoItem ON So.id = SoItem.soId WHERE So.statusId IN (10,20,30)"
+            }
+          }
+        end
+        code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+        Fishbowl::Connection.close
+        response.xpath("//Row").each do |row|
+            row_array=row.inner_html.split(',').map{|x| x.gsub("\"","")}
+            customer_fb_id=row_array[0]
+            sales_order_num = row_array[1]
+            product_num = row_array[2]
+            qty_to_fulfill = row_array[3]
+            customer=Customer.find_by_fb_id_and_order_consolidation_id(customer_fb_id,self.id) || Customer.create(fb_id: customer_fb_id, name: customer_name, order_consolidation: self)
+            sales_order=SalesOrder.find_by_sales_order_number_and_customer_id(sales_order_num,customer.id) || SalesOrder.create(num: sales_order_number, customer: customer )
+            sales_order_item=SalesOrderItem.create(product_num: product_num,qty_to_fulfill: qty_to_fulfill)
+        end
 *** Get Inventory With Db Query
 Fishbowl::Connection.connect
 Fishbowl::Connection.login

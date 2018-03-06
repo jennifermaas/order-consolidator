@@ -2,14 +2,7 @@ class SalesOrder < ActiveRecord::Base
   
     belongs_to :customer
     has_many :sales_order_items, dependent: :destroy
-   
-    #def self.find_by_id(param)
-    #    Fishbowl::Connection.connect
-    #    Fishbowl::Connection.login
-    #    resp=Fishbowl::Requests.load_sales_order(param);
-    #    SalesOrder.new xml_response: resp
-    #    Fishbowl::Connecton.close
-    #end
+
     
     def pickability_status
         pickable_count = sales_order_items.find_all{|x| x.is_fully_pickable?}.count
