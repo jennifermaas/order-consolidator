@@ -1,23 +1,11 @@
 <h1>Order Consolidation <%= @order_consolidation.id %></h1>
-<ul>
-    <li>
-        <% @order_consolidation.customers[0..50].each do |customer| %>
-            <h2><%= "#{customer.name} (id: #{customer.id})" %></h2>
-            <h3>Old Orders (<%= customer.sales_orders.count %>)</h3>
-            <ul>
-                <% customer.sales_orders.each do |sales_order| %>
-                    <li><%= render partial: "sales_order", object: sales_order %></li>  
-                <% end %>
-            </ul>
-            <% if customer.needs_consolidation? %>
-                <h3>New Orders</h3>
-                <ul>
-                    <li>pickable: <%= render partial: "sales_order", object: customer.pickable_order if customer.pickable_order %></li>  
-                    <li>not pickable: <%= render partial: "sales_order", object: customer.not_pickable_order if customer.not_pickable_order %></li>  
-                </ul>
-            <% else %>
-                <p>Doesn't need consolidation</p>
-            <% end %>
-        <% end %>
-    </li>
+<ul id="customers">
+    <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
+    <% @order_consolidation.customers.needed_consolidation.each do |customer| %>
+        <%= render customer %> 
+    <% end %>
+    <h2>DID NOT NEED CONSOLIDATION (<%= @order_consolidation.customers.did_not_need_consolidation.count %>)</h2>
+     <% @order_consolidation.customers.did_not_need_consolidation.each do |customer| %>
+        <%= render customer %> 
+    <% end %>
 </ul>

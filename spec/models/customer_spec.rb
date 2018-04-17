@@ -83,10 +83,10 @@ RSpec.describe Customer, type: :model do
         before :each do
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
             OrderConsolidation.skip_callback(:create, :after, :consolidate_orders)
-            OrderConsolidation.skip_callback(:create, :before, :create_inventory)
+            OrderConsolidation.skip_callback(:create, :after, :create_inventory)
             @product_1 = Product.create(num: '1', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
             @product_2 = Product.create(num: '2', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
-            @product_3 = Product.create(num: '3', qty_pickable_from_fb: 10, qty_pickable: 0, order_consolidation: order_consolidation)
+            @product_3 = Product.create(num: '3', qty_pickable_from_fb: 0, qty_pickable: 0, order_consolidation: order_consolidation)
             @product_4 = Product.create(num: '4', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
         end
         let(:order_consolidation) {create(:order_consolidation)}
@@ -120,6 +120,10 @@ RSpec.describe Customer, type: :model do
             expect(@product_2.reload.qty_pickable).to eq(0)
             expect(@product_3.reload.qty_pickable).to eq(0)
             expect(@product_4.reload.qty_pickable).to eq(5)
+            expect(@product_1.reload.qty_pickable_from_fb).to eq(10)
+            expect(@product_2.reload.qty_pickable_from_fb).to eq(10)
+            expect(@product_3.reload.qty_pickable_from_fb).to eq(0)
+            expect(@product_4.reload.qty_pickable_from_fb).to eq(10)
         end
         
         
@@ -130,7 +134,7 @@ RSpec.describe Customer, type: :model do
         before :each do
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
             OrderConsolidation.skip_callback(:create, :after, :consolidate_orders)
-            OrderConsolidation.skip_callback(:create, :before, :create_inventory)
+            OrderConsolidation.skip_callback(:create, :after, :create_inventory)
             @product_1 = Product.create(num: '10', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
             @product_2 = Product.create(num: '12', qty_pickable_from_fb: 12, qty_pickable: 12, order_consolidation: order_consolidation)
             @product_3 = Product.create(num: '0', qty_pickable_from_fb: 0, qty_pickable: 0, order_consolidation: order_consolidation)

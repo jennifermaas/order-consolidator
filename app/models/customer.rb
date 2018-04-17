@@ -7,10 +7,13 @@ class Customer < ActiveRecord::Base
     belongs_to :pickable_order, class_name: 'SalesOrder', foreign_key: "pickable_order_id", dependent: :destroy
     belongs_to :not_pickable_order, class_name: 'SalesOrder', foreign_key: "not_pickable_order_id", dependent: :destroy
     
+    scope :needed_consolidation, -> { where(needed_consolidation: true) }
+    scope :did_not_need_consolidation, -> { where(needed_consolidation: false) }
+    
     def update_fishbowl
         if needs_consolidation?
             sales_orders.each do |sales_order|
-                sales_order.void_in_fishbowl
+                #sales_order.void_in_fishbowl
             end
             consolidated_orders.each do |sales_order|
                 sales_order.write_to_fishbowl
@@ -52,8 +55,12 @@ class Customer < ActiveRecord::Base
     def line_items_need_consolidation?
         sales_order_items.each do |sales_order_item|
             matching_items = sales_order_items.find_all {|x| x.product_num == sales_order_item.product_num}
-            return true if matching_items.length > 1
+            if matching_items.length > 1
+                self.update_attribute(:line_items_needed_consolidation,true)
+                return true
+            end
         end
+        self.update_attribute(:line_items_needed_consolidation,false)
         return false
     end
     
@@ -103,21 +110,28 @@ class Customer < ActiveRecord::Base
     end
     
     def self.create_from_open_orders(order_consolidation)
+        require 'csv'
         #
-        Fishbowl::Connection.connect
-        Fishbowl::Connection.login
+        # KEXP Customer 1319
+        # KEXP RECORD STORE 1427
+        # KEXPPP 1365
+        # LITA Store 328
+        # PROMOS 333
+        # Employee Promos 1576
+        # DAILY PROMOS 758
+        # Damages & Defects 1603
+        # 328,1603,333,758,1576,1319,1427,1365
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.request {
             xml. ExecuteQueryRq {
-              xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (10,20,30) AND (customer.name NOT LIKE '%LITA Store%') AND (customer.name NOT LIKE '%KEXP RECORD STORE%')"
+              xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (20,25) AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365))"
             }
           }
         end
         code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
-        Fishbowl::Connection.close
         customers=[]
         response.xpath("//Row")[1..-1].each do |row|
-            row_array=row.inner_html.split(',').map{|x| x.gsub("\"","")}
+            row_array=row.content.parse_csv
             customers<< Customer.create(fb_id: row_array[0], name: row_array[1], order_consolidation: order_consolidation)
         end
         #

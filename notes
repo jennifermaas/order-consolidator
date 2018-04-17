@@ -1,3 +1,62 @@
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
+builder = Nokogiri::XML::Builder.new do |xml|
+  xml.request {
+    xml. ExecuteQueryRq {
+      xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE customer.name LIKE '%10%'"
+    }
+  }
+end
+code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+Fishbowl::Connection.close
+customers=[]
+response.xpath("//Row")[1..-1].each do |row|
+    row_array=row.content.split(',').map{|x| x.gsub("\"","")}
+    customers<< Customer.create(fb_id: row_array[0], name: row_array[1], order_consolidation: order_consolidation)
+end
+#
+return customers
+
+***
+SELECT Product.num,
+  QtyInventoryTotals.qtyOnHand as qty_on_hand,
+  QtyNotAvailableToPick.qty as qty_not_available,
+  QtyCommitted.qty AS qty_committed
+  FROM 
+  Part LEFT OUTER JOIN Product ON Part.id = Product.partId 
+  LEFT OUTER JOIN QtyInventoryTotals on QtyInventoryTotals.partId=Part.id
+  LEFT OUTER JOIN QtyCommitted ON QtyInventoryTotals.partId=QtyCommitted.partId
+  LEFT OUTER JOIN QtyNotAvailableToPick ON QtyNotAvailableToPick.partId=QtyInventoryTotals.partId
+  WHERE QtyCommitted.locationGroupId=1 
+  AND QtyInventoryTotals.locationGroupId=1
+  AND QtyNotAvailableToPick.locationGroupId=1 AND QtyNotAvailableToPick.partId=8213
+
+SELECT Product.num,
+  QtyInventoryTotals.qtyOnHand as qty_on_hand,
+  QtyInventoryTotals.locationGroupId as qty_inventory_totals_location,
+  QtyCommitted.locationGroupId as qty_committed_location,
+  QtyNotAvailableToPick.locationGroupId as qty_not_available_to_pick_location,
+  QtyNotAvailableToPick.qty as qty_not_available,
+  QtyCommitted.qty AS qty_committed
+FROM 
+  Part LEFT JOIN Product ON Part.id = Product.partId 
+  LEFT JOIN QtyInventoryTotals 
+    ON Part.id=QtyInventoryTotals.partId
+    AND (QtyInventoryTotals.locationGroupId=1)
+  LEFT JOIN QtyCommitted 
+    ON Part.id=QtyInventoryTotals.partId
+    AND QtyCommitted.locationGroupId=1
+    AND QtyInventoryTotals.locationGroupId=1
+  LEFT JOIN QtyNotAvailableToPick 
+    ON Part.id=QtyNotAvailableToPick.partId
+    AND QtyNotAvailableToPick.locationGroupId=1
+    AND QtyCommitted.locationGroupId=1
+    AND QtyInventoryTotals.locationGroupId=1
+WHERE Product.partId=2570
+    AND ((QtyNotAvailableToPick.locationGroupId=1) OR (QtyNotAvailableToPick.locationGroupId IS NULL)  )
+    AND ((QtyCommitted.locationGroupId=1) OR (QtyCommitted.locationGroupId IS NULL) )
+    AND ((QtyInventoryTotals.locationGroupId=1) OR (QtyInventoryTotals.locationGroupId IS NULL ));
+
 *** Get SOs with Query
         Fishbowl::Connection.connect
         Fishbowl::Connection.login
@@ -11,7 +70,7 @@
         code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
         Fishbowl::Connection.close
         response.xpath("//Row").each do |row|
-            row_array=row.inner_html.split(',').map{|x| x.gsub("\"","")}
+            row_array=row.content.split(',').map{|x| x.gsub("\"","")}
             customer_fb_id=row_array[0]
             sales_order_num = row_array[1]
             product_num = row_array[2]
@@ -26,7 +85,7 @@ Fishbowl::Connection.login
 builder = Nokogiri::XML::Builder.new do |xml|
   xml.request {
     xml. ExecuteQueryRq {
-      xml.Query "SELECT Product.num,QtyInventoryTotals.* FROM QtyInventoryTotals INNER JOIN Part ON QtyInventoryTotals.partId = Part.id INNER JOIN Product ON Part.id = Product.partId WHERE QtyInventoryTotals.LOCATIONGROUPID=1"
+      xml.Query "SELECT Product.num,QtyInventoryTotals.* FROM QtyInventoryTotals INNER JOIN Part ON QtyInventoryTotals.partId = Part.id INNER JOIN Product ON Part.id = Product.partId WHERE QtyInventoryTotals.LOCATIONGROUPID=1 AND Product.num='LITA156LP-COLOR'"
     }
   }
 end
@@ -34,10 +93,10 @@ code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "Produc
 Fishbowl::Connection.close
 product_inventory={}
 response.xpath("//Row")[1..-1].each do |row|
-    row_array=row.inner_html.split(',').map{|x| x.gsub("\"","")}
+    row_array=row.content.split(',').map{|x| x.gsub("\"","")}
     qty_on_hand = row_array[3]
     qty_allocated = row_array[4]
-    qty_not_available = row_array[5]
+    qty_not_available_to_pick = row_array[5]
     product_inventory["#{row_array[0]}"] = qty_on_hand.to_i - qty_allocated.to_i - qty_not_available.to_i
 end
 
@@ -127,19 +186,36 @@ code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "Produc
 Fishbowl::Connection.close
 
 
-
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
 request=Nokogiri::XML::Builder.new do |xml|
       xml.request {
         xml.VoidSORq {
-          xml.SONumber 50053
+          xml.SONumber "G477868"
         }
       }
     end
     
-    Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+code, response = Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
     
     
     
+
+request=Nokogiri::XML::Builder.new do |xml|
+        xml.request {
+            xml.InvQtyRq {
+              xml.PartNum 
+              xml.LastModifiedFrom '2001-02-03T10:04:27'
+              xml.LastModifiedTo '2029-02-03T10:04:27'
+            }
+        }
+    end
+
+Fishbowl::Objects::BaseObject.new.send_request(request, 'InvQtyRq')
+
+
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
 
 request=Nokogiri::XML::Builder.new do |xml|
         xml.request {
@@ -165,8 +241,8 @@ request=Nokogiri::XML::Builder.new do |xml|
         }
     end
 
-Fishbowl::Objects::BaseObject.new.send_request(request, 'AddSOItemRs')
-
-
+oc=OrderConsolidation.last
 Fishbowl::Connection.connect
 Fishbowl::Connection.login
+request=oc.customers[2].sales_orders[0].xml_builder
+Fishbowl::Objects::BaseObject.new.send_request(request, 'ImportRq')

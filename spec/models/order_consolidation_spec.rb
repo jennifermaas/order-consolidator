@@ -12,7 +12,7 @@ RSpec.describe OrderConsolidation, type: :model do
             allow(OrderConsolidation).to receive(:get_inventory_xml_from_fishbowl).and_return(xml)
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
             OrderConsolidation.skip_callback(:create, :after, :consolidate_orders)
-            OrderConsolidation.skip_callback(:create, :before, :create_inventory)
+            OrderConsolidation.skip_callback(:create, :after, :create_inventory)
             oc=OrderConsolidation.create
             oc.create_inventory
             products=Product.all
@@ -33,11 +33,12 @@ RSpec.describe OrderConsolidation, type: :model do
         it "decrements inventory and saves parent order consolidation" do
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
             OrderConsolidation.skip_callback(:create, :after, :consolidate_orders)
-            OrderConsolidation.skip_callback(:create, :before, :create_inventory_hash)
+            OrderConsolidation.skip_callback(:create, :after, :create_inventory)
             order_consolidation=OrderConsolidation.create
             Product.create(num: 'product_10', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
             order_consolidation.decrement_inventory(product_num: "product_10", qty: 2)
             expect(order_consolidation.products.find_by_num("product_10").qty_pickable).to eq(8)
+            expect(order_consolidation.products.find_by_num("product_10").qty_pickable_from_fb).to eq(10)
         end
         
     end

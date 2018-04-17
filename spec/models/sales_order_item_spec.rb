@@ -7,7 +7,7 @@ RSpec.describe SalesOrderItem, type: :model do
         before :each do
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
             OrderConsolidation.skip_callback(:create, :after, :consolidate_orders)
-            OrderConsolidation.skip_callback(:create, :before, :create_inventory)
+            OrderConsolidation.skip_callback(:create, :after, :create_inventory)
             @product_1 = Product.create(num: '10', qty_pickable_from_fb: 10, qty_pickable: 10, order_consolidation: order_consolidation)
         end
         let(:order_consolidation) {create(:order_consolidation)}

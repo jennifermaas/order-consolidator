@@ -2,7 +2,8 @@ class SalesOrder < ActiveRecord::Base
   
     belongs_to :customer
     has_many :sales_order_items, dependent: :destroy
-
+    has_one :customer_as_pickable, class_name: 'Customer', foreign_key: "pickable_order_id", dependent: :destroy
+    has_one :customer_as_not_pickable, class_name: 'Customer', foreign_key: "not_pickable_order_id", dependent: :destroy
     
     def pickability_status
         pickable_count = sales_order_items.find_all{|x| x.is_fully_pickable?}.count
@@ -18,64 +19,66 @@ class SalesOrder < ActiveRecord::Base
         end
     end
     
-    
-    def xml_builder
+    def void_in_fishbowl
+      request=Nokogiri::XML::Builder.new do |xml|
+        xml.request {
+          xml.VoidSORq {
+            xml.SONumber self.num
+          }
+        }
+      end
+      Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+    end
+
+    def xml_hash
         # Sales Order Fields
+        origin_order_sibling = if self.customer_as_pickable
+          customer_as_pickable.sales_orders[0]
+        elsif self.customer_as_not_pickable 
+          customer_as_not_pickable.sales_orders[0]
+        else
+          self
+        end
         order_xml_hash = {}
         order_xml_hash["Flag"]="SO"
         order_xml_hash["SONum"]=""
         order_xml_hash["Status"]="20"
-        order_xml_hash["CustomerName"]=xml.xpath("CustomerName").inner_html
-        order_xml_hash["CustomerContact"]=xml.xpath("CustomerContact").inner_html
-        order_xml_hash["BillToName"]=xml.xpath("BillTo//Name").inner_html
-        order_xml_hash["BillToAddress"]=xml.xpath("BillTo//AddressField").inner_html
-        order_xml_hash["BillToCity"]=xml.xpath("BillTo//City").inner_html
-        order_xml_hash["BillToState"]=xml.xpath("BillTo//State").inner_html
-        order_xml_hash["BillToZip"]=xml.xpath("BillTo//Zip").inner_html
-        order_xml_hash["BillToCountry"]=xml.xpath("BillTo//Country").inner_html
-        order_xml_hash["ShipToName"]=xml.xpath("Ship//Name").inner_html
-        order_xml_hash["ShipToAddress"]=xml.xpath("Ship//AddressField").inner_html
-        order_xml_hash["ShipToCity"]=xml.xpath("Ship//City").inner_html
-        order_xml_hash["ShipToState"]=xml.xpath("Ship//State").inner_html
-        order_xml_hash["ShipToZip"]=xml.xpath("Ship//Zip").inner_html
-        order_xml_hash["ShipToCountry"]=xml.xpath("Ship//Country").inner_html
-        order_xml_hash["ShipToResidential"]
-        order_xml_hash["CarrierName"]=xml.xpath("Carrier").inner_html
-        order_xml_hash["TaxRateName"]=xml.xpath("TaxRateName").inner_html
-        order_xml_hash["PriorityId"]=xml.xpath("PriorityId").inner_html
-        order_xml_hash["PONum"]=xml.xpath("PoNum").inner_html
+        order_xml_hash["CustomerName"]=origin_order_sibling.customer.name
+        order_xml_hash["CustomerContact"]=origin_order_sibling.customer_contact
+        order_xml_hash["BillToName"]=origin_order_sibling.bill_to_name
+        order_xml_hash["BillToAddress"]=origin_order_sibling.bill_to_address
+        order_xml_hash["BillToCity"]=origin_order_sibling.bill_to_city
+        order_xml_hash["BillToState"]=origin_order_sibling.bill_to_state
+        order_xml_hash["BillToZip"]=origin_order_sibling.bill_to_zip
+        order_xml_hash["BillToCountry"]=origin_order_sibling.bill_to_country
+        order_xml_hash["ShipToName"]=origin_order_sibling.ship_to_name
+        order_xml_hash["ShipToAddress"]=origin_order_sibling.ship_to_address
+        order_xml_hash["ShipToCity"]=origin_order_sibling.ship_to_city
+        order_xml_hash["ShipToState"]=origin_order_sibling.ship_to_state
+        order_xml_hash["ShipToZip"]=origin_order_sibling.ship_to_zip
+        order_xml_hash["ShipToCountry"]=origin_order_sibling.ship_to_country
+        order_xml_hash["CarrierName"]=origin_order_sibling.carrier_name
+        order_xml_hash["TaxRateName"]=origin_order_sibling.tax_rate_name
+        order_xml_hash["PriorityId"]=origin_order_sibling.priority_id
+        order_xml_hash["PONum"]=origin_order_sibling.po_num
         order_xml_hash["Date"]=""
-        order_xml_hash["Salesman"]=xml.xpath("Salesman").inner_html
-        order_xml_hash["ShippingTerms"]=xml.xpath("ShippingTerms").inner_html
-        order_xml_hash["PaymentTerms"]=xml.xpath("PaymentTerms").inner_html
-        order_xml_hash["FOB"]=xml.xpath("FOB").inner_html
-        order_xml_hash["Note"]=xml.xpath("Note").inner_html
-        order_xml_hash["QuickBooksClassName"]=xml.xpath("QuickBooksClassName").inner_html
-        order_xml_hash["LocationGroupName"]=xml.xpath("LocationGroup").inner_html
+        order_xml_hash["Salesman"]=origin_order_sibling.salesman
+        order_xml_hash["ShippingTerms"]=origin_order_sibling.shipping_terms
+        order_xml_hash["PaymentTerms"]=origin_order_sibling.payment_terms
+        order_xml_hash["FOB"]=origin_order_sibling.fob
+        order_xml_hash["Note"]=origin_order_sibling.note
+        order_xml_hash["QuickBooksClassName"]=origin_order_sibling.quickbooks_class_name
+        order_xml_hash["LocationGroupName"]=origin_order_sibling.location_group_name
         order_xml_hash["FulfillmentDate"]=""
-        order_xml_hash["URL"]=xml.xpath("URL").inner_html
-        order_xml_hash["CarrierService"]=""
-        order_xml_hash["CurrencyName"]=""
-        order_xml_hash["CurrencyRate"]=""
-        order_xml_hash["PriceIsHomeCurrency"]=xml.xpath("PriceIsHomeCurrency").inner_html
-        order_xml_hash["DateExpired"]=""
-        order_xml_hash["Phone"]=""
-        order_xml_hash["Email"]=""
-        builder = Nokogiri::XML::Builder.new do |xml|
-              xml.request {
-                xml. ImportRq {
-                  xml.Type 'ImportSalesOrder'
-                  xml.Rows{
-                      xml.Row order_xml_hash.keys.map{|x| "\"#{x}\""}.join(",")
-                      xml.Row sales_order_items[0].xml_hash.keys.map{|x| "\"#{x}\""}.join(",")
-                      xml.Row order_xml_hash.values.map{|x| "\"#{x}\""}.join(",")
-                      sales_order_items.each do |sales_order_item|
-                        xml.Row sales_order_item.xml_hash.values.map{|x| "\"#{x}\""}.join(",")
-                      end
-                  }
-                }
-              }
+        order_xml_hash["URL"]=origin_order_sibling.url
+        order_xml_hash["CF-ConsolidationType"] = if self.customer_as_pickable
+          'Pickable'
+        elsif self.customer_as_not_pickable 
+          'Not Pickable'
+        else
+          ''
         end
+        return order_xml_hash
     end
     
 end
