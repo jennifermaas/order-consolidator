@@ -10,23 +10,42 @@ class Customer < ActiveRecord::Base
     scope :needed_consolidation, -> { where(needed_consolidation: true) }
     scope :did_not_need_consolidation, -> { where(needed_consolidation: false) }
     
-    def update_fishbowl
-        if needs_consolidation?
-            sales_orders.each do |sales_order|
-                #sales_order.void_in_fishbowl
-            end
-            consolidated_orders.each do |sales_order|
-                sales_order.write_to_fishbowl
-            end
+    def void_orders_in_fishbowl
+        self.sales_orders.each do |order|
+          order.void_in_fishbowl
         end
     end
     
-    
-    def commit_consolidated_orders_to_fishbowl
-        # create fishbowl_call for voiding existing orders
-        # void existing orders
-        # create fishbowl call for creating new orders
-        # create new_orders
+    def write_orders_to_fishbowl
+        builder = Nokogiri::XML::Builder.new do |xml|
+          xml.request {
+            xml. ImportRq {
+              xml.Type 'ImportSalesOrder'
+              xml.Rows{
+                xml.Row order_consolidation.customers.needed_consolidation[0].sales_orders[0].xml_hash.keys.map{|x| "\"#{x}\""}.join(",") # get headers from first order
+                xml.Row order_consolidation.customers.needed_consolidation[0].sales_order_items[0].xml_hash.keys.map{|x| "\"#{x}\""}.join(",")
+                if self.needed_consolidation
+                  if self.pickable_order.sales_order_items.length>0
+                    xml.Row self.pickable_order.xml_hash.values.map{|x| "\"#{x}\""}.join(",")
+                    self.pickable_order.sales_order_items.each do |sales_order_item|
+                      xml.Row sales_order_item.xml_hash.values.map{|x| "\"#{x}\""}.join(",")
+                    end
+                  end
+                  if self.not_pickable_order.sales_order_items.length>0
+                    xml.Row self.not_pickable_order.xml_hash.values.map{|x| "\"#{x}\""}.join(",")
+                    self.not_pickable_order.sales_order_items.each do |sales_order_item|
+                      xml.Row sales_order_item.xml_hash.values.map{|x| "\"#{x}\""}.join(",")
+                    end
+                  end
+                end
+              }
+            }
+          }
+        end
+        code,response=Fishbowl::Objects::BaseObject.new.send_request(builder, 'ImportRq')
+        if response.xpath("//ImportRs/@statusCode").first.value != "1000"
+            self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+        end
     end
     
     def needs_consolidation?

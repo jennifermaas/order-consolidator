@@ -1,4 +1,10 @@
 <h1>Order Consolidation <%= @order_consolidation.id %></h1>
+<h2>ERRORS/MESSAGES</h2>
+<ul>
+    <% @order_consolidation.messages.each do |message| %>
+        <li><%= message.body %></li>
+    <% end %>
+</ul>
 <ul id="customers">
     <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
     <% @order_consolidation.customers.needed_consolidation.each do |customer| %>

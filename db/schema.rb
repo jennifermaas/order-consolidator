@@ -36,9 +36,9 @@ ActiveRecord::Schema.define(version: 20180417204936) do
 
   create_table "messages", force: :cascade do |t|
     t.integer  "order_consolidation_id", limit: 4
-    t.string   "body",                   limit: 255
-    t.datetime "created_at",                         null: false
-    t.datetime "updated_at",                         null: false
+    t.text     "body",                   limit: 65535
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
   end
 
   add_index "messages", ["order_consolidation_id"], name: "index_messages_on_order_consolidation_id", using: :btree

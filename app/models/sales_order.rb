@@ -5,6 +5,10 @@ class SalesOrder < ActiveRecord::Base
     has_one :customer_as_pickable, class_name: 'Customer', foreign_key: "pickable_order_id", dependent: :destroy
     has_one :customer_as_not_pickable, class_name: 'Customer', foreign_key: "not_pickable_order_id", dependent: :destroy
     
+    def order_consolidation
+      customer.order_consolidation
+    end
+    
     def pickability_status
         pickable_count = sales_order_items.find_all{|x| x.is_fully_pickable?}.count
         not_pickable_count = sales_order_items.find_all{|x| !x.is_fully_pickable?}.count
@@ -27,7 +31,10 @@ class SalesOrder < ActiveRecord::Base
           }
         }
       end
-      Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+      code,response=Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+      if response.xpath("//VoidSORs/@statusCode").first.value != "1000"
+        self.order_consolidation.create_message "Void order failed for num: #{self.num}"
+      end
     end
 
     def xml_hash
