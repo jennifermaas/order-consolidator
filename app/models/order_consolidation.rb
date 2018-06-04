@@ -1,6 +1,7 @@
 class OrderConsolidation < ActiveRecord::Base
     after_commit :run
     has_many :customers, -> { order(:name) }, dependent: :destroy
+    has_many :sales_orders, through: :customers
     has_many :products
     has_many :product_errors
     has_many :messages
@@ -52,8 +53,11 @@ class OrderConsolidation < ActiveRecord::Base
     def write_consolidated_orders_to_fishbowl
 
       customers.needed_consolidation.each do |customer|
-        customer.write_orders_to_fishbowl
-        customer.void_orders_in_fishbowl
+        if customer.void_orders_in_fishbowl
+          customer.write_orders_to_fishbowl
+        else
+          create_message "customer #{customer.name} had a failed sale void, and following voids and creates were cancelled"
+        end
       end
     end
     
@@ -68,7 +72,8 @@ class OrderConsolidation < ActiveRecord::Base
                             ON Part.id = Product.partId 
                           LEFT JOIN QtyInventoryTotals 
                             ON QtyInventoryTotals.partId=Part.id
-                            AND QtyInventoryTotals.locationGroupId=1"
+                            AND QtyInventoryTotals.locationGroupId=1
+                          WHERE Product.num LIKE '%TOOST%'"
             }
           }
         end
@@ -86,7 +91,8 @@ class OrderConsolidation < ActiveRecord::Base
                             ON Part.id = Product.partId 
                           INNER JOIN QtyCommitted 
                             ON QtyCommitted.partId=Part.id
-                            AND QtyCommitted.locationGroupId=1"
+                            AND QtyCommitted.locationGroupId=1
+                          WHERE Product.num LIKE '%TOOST%'"
             }
           }
         end
@@ -104,7 +110,8 @@ class OrderConsolidation < ActiveRecord::Base
                             ON Part.id = Product.partId 
                           INNER JOIN QtyNotAvailableToPick 
                             ON QtyNotAvailableToPick.partId=Part.id
-                            AND QtyNotAvailableToPick.locationGroupId=1"
+                            AND QtyNotAvailableToPick.locationGroupId=1
+                          WHERE Product.num LIKE '%TOOST%'"
             }
           }
         end
@@ -189,7 +196,7 @@ class OrderConsolidation < ActiveRecord::Base
           code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
           sales_order_params = {}
           response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            unless (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R")
+            unless (sales_order_xml.xpath("PriorityId").inner_html[0]=="5") || (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R")
               sales_order_params["num"]=sales_order_xml.at_xpath("Number").try(:content)
               sales_order_params["customer_id"]=customer.id
               sales_order_params["customer_contact"]=sales_order_xml.at_xpath("CustomerContact").try(:content).force_encoding('iso-8859-1').encode('utf-8')

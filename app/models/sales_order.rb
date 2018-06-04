@@ -10,9 +10,20 @@ class SalesOrder < ActiveRecord::Base
     end
     
     def pickability_status
-        pickable_count = sales_order_items.find_all{|x| x.is_fully_pickable?}.count
-        not_pickable_count = sales_order_items.find_all{|x| !x.is_fully_pickable?}.count
-        if (pickable_count>0) && (not_pickable_count>0)
+        pickable_count = 0
+        not_pickable_count = 0
+        mixed_count = 0
+        sales_order_items.each do |sales_order_item|
+          if sales_order_item.qty_pickable==0
+            not_pickable_count +=1
+          elsif sales_order_item.qty_to_fulfill <= sales_order_item.qty_pickable
+            pickable_count +=1
+          else 
+            mixed_count+=1
+          end
+        end
+        puts "\nPICKABLE COUNT: #{pickable_count}, NOT PICKABLE COUNT: #{not_pickable_count}, MIXED COUNT: #{mixed_count}\n"
+        if (mixed_count > 0) || ((pickable_count>0) && (not_pickable_count>0))
             return 'mixed'
         elsif pickable_count>0
             return 'pickable'
@@ -34,6 +45,9 @@ class SalesOrder < ActiveRecord::Base
       code,response=Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
       if response.xpath("//VoidSORs/@statusCode").first.value != "1000"
         self.order_consolidation.create_message "Void order failed for num: #{self.num}"
+        return false
+      else
+        return true
       end
     end
 

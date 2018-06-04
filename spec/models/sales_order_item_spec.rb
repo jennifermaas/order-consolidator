@@ -27,24 +27,4 @@ RSpec.describe SalesOrderItem, type: :model do
         
     end
     
-    describe "is_fully_pickable?" do
-        
-        before :each do 
-            allow_any_instance_of(SalesOrderItem).to receive(:qty_pickable).and_return(10)
-        end
-       
-        it "returns true when qty_to_fulfill < qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: "product_10",qty_to_fulfill: 1)  
-            expect(sales_order_item.is_fully_pickable?).to eq(true)
-        end
-        it "returns true when qty_to_fulfill == qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: "product_10",qty_to_fulfill: 10)    
-            expect(sales_order_item.is_fully_pickable?).to eq(true)
-        end
-        it "returns false when qty_to_fulfill > qty_pickable" do
-            sales_order_item = SalesOrderItem.new(num: '1', product_num: "product_10",qty_to_fulfill: 12) 
-            expect(sales_order_item.is_fully_pickable?).to eq(false)
-        end
-    end
-    
 end

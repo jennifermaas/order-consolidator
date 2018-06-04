@@ -39,7 +39,7 @@ RSpec.describe SalesOrder, type: :model do
         it "returns mixed if there are not pickable and partially pickable items" do
             sales_order.sales_order_items << not_pickable_sales_order_item
             sales_order.sales_order_items << partially_pickable_sales_order_item
-            expect(sales_order.pickability_status).to eq('not_pickable')
+            expect(sales_order.pickability_status).to eq('mixed')
         end
         
         it "returns not pickable if there is only a not pickable item" do

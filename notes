@@ -1,19 +1,62 @@
+Change for testing
+order_consolidation.get_inventory_xml_from_fishbowl (add where like)
+customer.create_from_open_orders(order_consolidation)
+get_committed_xml_from_fishbowl
+get_not_available_to_pick_xml_from_fishbowl
+****
+
+select DISTINCT customer.id,customer.name,count(customer.id) FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (20,25) AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365) AND (So.priorityId <> 5)) GROUP BY Customer.id ORDER BY Customer.name
+
+****
+
+INSERT INTO `sales_orders` (`num`, `customer_id`, `customer_contact`, `bill_to_name`, `bill_to_address`, `bill_to_city`, `bill_to_zip`, `bill_to_country`, `ship_to_name`, `ship_to_address`, `ship_to_city`, `ship_to_zip`, `ship_to_country`, `carrier_name`, `tax_rate_name`, `priority_id`, `po_num`, `date`, `salesman`, `shipping_terms`, `payment_terms`, `fob`, `note`, `quickbooks_class_name`, `location_group_name`, `url`, `carrier_service`, `price_is_home_currency`, `phone`, `email`, `created_at`, `updated_at`) VALUES ('#639955', 3063, 'Vinyl Digital GmbH', 'Vinyl Digital GmbH', 'Am Metzenweg 1', 'Mörschbach', '55494', 'DE', 'Vinyl Digital GmbH', 'Am Metzenweg 1', 'Mörschbach', '55494', 'DE', 'Will Call', 'None', '30', '', '2018-03-13 00:00:00', 'Dude', 'Prepaid & Billed', 'Bank Wire', 'Origin', '', 'None', 'LITA', '', '', 'true', '', '', '2018-04-25 00:02:35', '2018-04-25 00:02:35')
+
+***
+
 Fishbowl::Connection.connect
 Fishbowl::Connection.login
-builder = Nokogiri::XML::Builder.new do |xml|
+oc=OrderConsolidation.find_by_id 12
+c=oc.customers.needed_consolidation.first
+c.write_orders_to_fishbowl
+
+
+o=c.pickable_order
+
+
+*****
+
+Fishbowl::Connection.connect
+Fishbowl::Connection.login
+request=Nokogiri::XML::Builder.new do |xml|
   xml.request {
-    xml. ExecuteQueryRq {
-      xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE customer.name LIKE '%10%'"
+    xml.GetPickRq {
+      xml.PickNum 'S643839'
     }
   }
 end
-code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
-Fishbowl::Connection.close
-customers=[]
-response.xpath("//Row")[1..-1].each do |row|
-    row_array=row.content.split(',').map{|x| x.gsub("\"","")}
-    customers<< Customer.create(fb_id: row_array[0], name: row_array[1], order_consolidation: order_consolidation)
+code,response=Fishbowl::Objects::BaseObject.new.send_request(request, 'GetPickRq')
+pick=response.xpath("//Pick")
+request2=Nokogiri::XML::Builder.new do |xml|
+  xml.request {
+    xml.SavePickRq "hi"
+  }
 end
+request2.('SavePickRq').add_child(Nokogiri::XML.fragment(pick))
+code,response=Fishbowl::Objects::BaseObject.new.send_request(request, 'SavePickRq')
+
+*****
+
+request=Nokogiri::XML::Builder.new do |xml|
+  xml.request {
+    xml.VoidSORq {
+      xml.SONumber '643821'
+    }
+  }
+end
+code,response=Fishbowl::Objects::BaseObject.new.send_request(request, 'VoidSORs')
+response.xpath("//VoidSORs/@statusCode").first.value
+
+if response.xpath("VoidSORs")
 #
 return customers
 

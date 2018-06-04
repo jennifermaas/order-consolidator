@@ -4,10 +4,6 @@ class SalesOrderItem < ActiveRecord::Base
     validates :qty_to_fulfill, numericality: { greater_than_or_equal_to: 0 }, on: :update
     
     
-    def is_fully_pickable?
-        qty_to_fulfill <= qty_pickable
-    end
-    
     def customer
         if sales_order.customer
             return sales_order.customer

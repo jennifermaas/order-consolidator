@@ -12,7 +12,7 @@ class Customer < ActiveRecord::Base
     
     def void_orders_in_fishbowl
         self.sales_orders.each do |order|
-          order.void_in_fishbowl
+          return false unless order.void_in_fishbowl
         end
     end
     
@@ -72,7 +72,9 @@ class Customer < ActiveRecord::Base
     end
     
     def line_items_need_consolidation?
+        puts "IN LINE ITEMS NEED CONSOLIDATION?"
         sales_order_items.each do |sales_order_item|
+            puts "IN LOOP"
             matching_items = sales_order_items.find_all {|x| x.product_num == sales_order_item.product_num}
             if matching_items.length > 1
                 self.update_attribute(:line_items_needed_consolidation,true)
@@ -143,7 +145,7 @@ class Customer < ActiveRecord::Base
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.request {
             xml. ExecuteQueryRq {
-              xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (20,25) AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365))"
+              xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (20,25) AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365)) AND customer.name LIKE '%TOOST%'"
             }
           }
         end
