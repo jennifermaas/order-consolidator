@@ -1,9 +1,9 @@
 <h1>Order Consolidation <%= @order_consolidation.id %></h1>
-<p>Started at <%= @order_consolidation.created_at %></p>
+<p>Started at <%= short_datetime @order_consolidation.created_at %></p>
 <h2>ERRORS/MESSAGES</h2>
 <ul id="messages" data-id="<%= @order_consolidation.id %>">
     <% @order_consolidation.messages.each do |message| %>
-        <li><%= message.body %> (<%= message.created_at %>)</li>
+        <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
     <% end %>
 </ul>
 <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>

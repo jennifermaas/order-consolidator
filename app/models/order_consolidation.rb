@@ -14,16 +14,25 @@ class OrderConsolidation < ActiveRecord::Base
       if connect_to_fishbowl
         create_message "Starting Create Inventory"
         create_inventory
+        create_message "Products Found: #{self.products.count}"
+        #
         create_message "Starting Create Customers"
         create_customers
+        create_message "Customers Found: #{self.customers.count}"
+        #
         create_message "Starting Create Sales Orders"
         create_sales_orders
+        #
         create_message "Starting Consolidate orders"
         consolidate_orders
+        #
         create_message "Write Consolidated Orders to Fishbowl"
         write_consolidated_orders_to_fishbowl
+        #
         create_message "Disconnecting From fishbowl"
         disconnect_from_fishbowl
+      else
+        create_message "Could not connect to fishbowl"
       end
     end
     
@@ -76,7 +85,8 @@ class OrderConsolidation < ActiveRecord::Base
                           LEFT JOIN QtyInventoryTotals 
                             ON QtyInventoryTotals.partId=Part.id
                             AND QtyInventoryTotals.locationGroupId=1
-                          WHERE product.activeFlag=1"
+                          WHERE product.activeFlag=1
+                            AND NOT (product.num LIKE 'KEXP%')"
             }
           }
         end
@@ -95,7 +105,8 @@ class OrderConsolidation < ActiveRecord::Base
                           INNER JOIN QtyCommitted 
                             ON QtyCommitted.partId=Part.id
                             AND QtyCommitted.locationGroupId=1
-                          WHERE product.activeFlag=1"
+                          WHERE product.activeFlag=1
+                            AND NOT (product.num LIKE 'KEXP%')"
             }
           }
         end
@@ -114,7 +125,8 @@ class OrderConsolidation < ActiveRecord::Base
                           INNER JOIN QtyNotAvailableToPick 
                             ON QtyNotAvailableToPick.partId=Part.id
                             AND QtyNotAvailableToPick.locationGroupId=1
-                          WHERE product.activeFlag=1"
+                          WHERE product.activeFlag=1
+                            AND NOT (product.num LIKE 'KEXP%')"
             }
           }
         end
