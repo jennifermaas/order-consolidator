@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  get 'order_consolidations/index'
-
-  get 'order_consolidations/show'
+  resources :order_consolidations
+  
+  root 'order_consolidations#index'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

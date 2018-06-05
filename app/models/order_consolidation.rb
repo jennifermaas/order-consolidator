@@ -1,5 +1,5 @@
 class OrderConsolidation < ActiveRecord::Base
-    after_commit :run
+    #after_commit :run
     has_many :customers, -> { order(:name) }, dependent: :destroy
     has_many :sales_orders, through: :customers
     has_many :products
@@ -50,6 +50,9 @@ class OrderConsolidation < ActiveRecord::Base
         product.save!
     end
     
+    def self.test_method
+    end
+    
     def write_consolidated_orders_to_fishbowl
 
       customers.needed_consolidation.each do |customer|
@@ -73,7 +76,7 @@ class OrderConsolidation < ActiveRecord::Base
                           LEFT JOIN QtyInventoryTotals 
                             ON QtyInventoryTotals.partId=Part.id
                             AND QtyInventoryTotals.locationGroupId=1
-                          WHERE Product.num LIKE '%TOOST%'"
+                          WHERE product.activeFlag=1"
             }
           }
         end
@@ -92,7 +95,7 @@ class OrderConsolidation < ActiveRecord::Base
                           INNER JOIN QtyCommitted 
                             ON QtyCommitted.partId=Part.id
                             AND QtyCommitted.locationGroupId=1
-                          WHERE Product.num LIKE '%TOOST%'"
+                          WHERE product.activeFlag=1"
             }
           }
         end
@@ -111,7 +114,7 @@ class OrderConsolidation < ActiveRecord::Base
                           INNER JOIN QtyNotAvailableToPick 
                             ON QtyNotAvailableToPick.partId=Part.id
                             AND QtyNotAvailableToPick.locationGroupId=1
-                          WHERE Product.num LIKE '%TOOST%'"
+                          WHERE product.activeFlag=1"
             }
           }
         end
@@ -123,6 +126,7 @@ class OrderConsolidation < ActiveRecord::Base
       response=OrderConsolidation.get_inventory_xml_from_fishbowl
       response.xpath("//Row")[1..-1].each do |row|
           puts "IN CREATE PRODUCTS LOOP"
+          puts "ROW: #{row.to_s}"
           row_array=row.try(:content).split(',').map{|x| x.gsub("\"","")}
           puts "ROW ARRAY: #{row_array}"
           Product.create num: "#{row_array[0]}", qty_on_hand: (row_array[1] || 0), order_consolidation: self

@@ -1,16 +1,19 @@
 <h1>Order Consolidation <%= @order_consolidation.id %></h1>
+<p>Started at <%= @order_consolidation.created_at %></p>
 <h2>ERRORS/MESSAGES</h2>
-<ul>
+<ul id="messages" data-id="<%= @order_consolidation.id %>">
     <% @order_consolidation.messages.each do |message| %>
-        <li><%= message.body %></li>
+        <li><%= message.body %> (<%= message.created_at %>)</li>
     <% end %>
 </ul>
-<ul id="customers">
-    <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
+<h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
+<ul class="customers">
     <% @order_consolidation.customers.needed_consolidation.each do |customer| %>
         <%= render customer %> 
     <% end %>
-    <h2>DID NOT NEED CONSOLIDATION (<%= @order_consolidation.customers.did_not_need_consolidation.count %>)</h2>
+</ul>
+<h2>DID NOT NEED CONSOLIDATION (<%= @order_consolidation.customers.did_not_need_consolidation.count %>)</h2>
+<ul class="customers">
      <% @order_consolidation.customers.did_not_need_consolidation.each do |customer| %>
         <%= render customer %> 
     <% end %>

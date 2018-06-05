@@ -1,1 +1,10 @@
-<h1>OrderConsolidations#index</h1>
+<h1>Order Consolidations</h1>
+<p>New consolidation will look for customers with 'TOOST' in their names</p>
+<%= link_to "create consolidation >", @order_consolidation, method: 'post' %>
+
+<h2>Existing Consolidations</h2>
+<ul>
+    <% @order_consolidations.each do |oc| %>
+        <li><%= link_to oc.created_at, oc %></li>
+    <% end %>
+</ul>

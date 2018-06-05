@@ -12,7 +12,8 @@ module Workspace
     Fishbowl.configure do |config|
       config.username = "admin"
       config.password = "litaadmin"
-      config.host = "35.169.125.206"
+      #config.host = "35.169.125.206"
+      config.host = "66.171.181.94"
       config.app_id = "1234"
       config.app_name = "Fishbowl Ruby Gem"
       config.app_description = "Fishbowl Ruby Gem"
@@ -32,5 +33,6 @@ module Workspace
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+    config.active_job.queue_adapter = :delayed_job
   end
 end

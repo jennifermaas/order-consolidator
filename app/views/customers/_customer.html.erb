@@ -1,25 +1,25 @@
         <li>
-            <h2><%= "#{customer.name} (id: #{customer.fb_id})" %></h2>
+            <h3><%= "#{customer.name} (id: #{customer.fb_id})" %></h3>
             <p class="status">Needed Consolidation? <%= customer.needed_consolidation %></p>
             <p class="status">Line Items Needed Consolidation? <%= customer.line_items_needed_consolidation %></p>
-            <h3>Original Orders (<%= customer.sales_orders.count %>)</h3>
+            <h4>Original Orders (<%= customer.sales_orders.count %>)</h4>
             <ul class="sales_orders">
                 <% customer.sales_orders.each do |sales_order| %>
                     <li>
-                        <h4>Order Num <%= sales_order.num %>: </h4>
+                        <h5>Order Num <%= sales_order.num %>: </h5>
                         <%= render partial: "sales_order", object: sales_order %>
                     </li>  
                 <% end %>
             </ul>
             <% if customer.needed_consolidation %>
-                <h3>Consolidated Orders</h3>
+                <h4>Consolidated Orders</h4>
                 <ul class="sales_orders">
                     <li>
-                        <h4>Pickable Order:</h4>
+                        <h5>Pickable Order:</h5>
                         <%= render partial: "sales_order", object: customer.pickable_order if customer.pickable_order %>
                     </li>  
                     <li>
-                        <h4>Not Pickable Order:</h4> 
+                        <h5>Not Pickable Order:</h5> 
                         <%= render partial: "sales_order", object: customer.not_pickable_order if customer.not_pickable_order %>
                     </li>  
                 </ul>
