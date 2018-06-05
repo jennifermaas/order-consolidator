@@ -22,7 +22,7 @@ production:
   database: order_consolidator_production
   username: lita
   password: litarox!
-  host: lita-music-licensing-cluster.cluster-czxwwmzpquwp.us-east-1.rds.amazonaws.com
+  host: consolidator.czxwwmzpquwp.us-east-1.rds.amazonaws.com
   pool: 5
   timeout: 5000
   encoding: utf8
