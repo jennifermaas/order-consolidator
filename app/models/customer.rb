@@ -145,7 +145,21 @@ class Customer < ActiveRecord::Base
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.request {
             xml. ExecuteQueryRq {
-              xml.Query "select DISTINCT(customer.id),customer.name FROM so inner join customer on so.customerId=customer.id  WHERE So.statusId IN (20,25) AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365)) AND customer.name LIKE '%TOOST%'"
+              xml.Query "select DISTINCT(customer.id),customer.name 
+                                FROM so inner join customer on so.customerId=customer.id  
+                                WHERE So.statusId IN (20,25) 
+                                  AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365)) 
+                                  AND (     (customer.name LIKE '%TOOST%')
+                                        OR  (customer.name='Generation Records')
+                                        OR  (customer.name='Turntable Lab')
+                                        OR  (customer.name='A Day In The Life')
+                                        OR  (customer.name='Jared Kusmit')
+                                        OR  (customer.name='Yellow Dog')
+                                        OR  (customer.name='Shangri-La')
+                                        OR  (customer.name='Keene On Vinyl')
+                                        OR  (customer.name='Kops')
+                                        OR  (customer.name='Culture Clash')
+                                        OR  (customer.name='RPM'))"
             }
           }
         end
