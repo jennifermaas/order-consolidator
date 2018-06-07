@@ -212,7 +212,7 @@ class OrderConsolidation < ActiveRecord::Base
           code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
           sales_order_params = {}
           response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            unless (sales_order_xml.xpath("PriorityId").inner_html[0]=="5") || (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R")
+            unless (sales_order_xml.xpath("PriorityId").inner_html[0]=="5") || (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R") || (sales_order_xml.xpath("Number").inner_html[0]=="@")
               sales_order_params["num"]=sales_order_xml.at_xpath("Number").try(:content)
               sales_order_params["customer_id"]=customer.id
               sales_order_params["customer_contact"]=sales_order_xml.at_xpath("CustomerContact").try(:content).force_encoding('iso-8859-1').encode('utf-8')
