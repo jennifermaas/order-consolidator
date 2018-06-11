@@ -145,7 +145,7 @@ class Customer < ActiveRecord::Base
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.request {
             xml. ExecuteQueryRq {
-              xml.Query "select DISTINCT(customer.id),customer.name 
+              xml.Query "select DISTINCT(customer.id),customer.name, customer.number
                                 FROM so inner join customer on so.customerId=customer.id  
                                 WHERE So.statusId IN (20,25) 
                                   AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365)) 
@@ -171,7 +171,7 @@ class Customer < ActiveRecord::Base
         customers=[]
         response.xpath("//Row")[1..-1].each do |row|
             row_array=row.content.parse_csv
-            customers<< Customer.create(fb_id: row_array[0], name: row_array[1], order_consolidation: order_consolidation)
+            customers<< Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: order_consolidation)
         end
         #
         return customers

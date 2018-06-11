@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180605043532) do
+ActiveRecord::Schema.define(version: 20180611194900) do
 
   create_table "customers", force: :cascade do |t|
     t.integer  "fb_id",                           limit: 4
@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(version: 20180605043532) do
     t.integer  "order_consolidation_id",          limit: 4
     t.boolean  "needed_consolidation",                        default: false
     t.boolean  "line_items_needed_consolidation",             default: false
+    t.string   "account_number",                  limit: 255
   end
 
   create_table "delayed_jobs", force: :cascade do |t|

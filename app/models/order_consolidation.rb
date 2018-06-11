@@ -205,7 +205,7 @@ class OrderConsolidation < ActiveRecord::Base
               xml.GetSOListRq {
                 xml.Status 'All Open'
                 xml.LocationGroupName 'LITA'
-                xml.CustomerName customer.name
+                xml.AccountNumber customer.account_number
               }
             }
           end
