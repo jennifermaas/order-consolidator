@@ -3,6 +3,9 @@ class SalesOrderItem < ActiveRecord::Base
     validates_presence_of :product_num
     validates :qty_to_fulfill, numericality: { greater_than_or_equal_to: 0 }, on: :update
     
+    def is_inventory_item?
+        (so_item_type_id && so_item_type_id.to_i <=12 ) ? true : false
+    end
     
     def customer
         if sales_order.customer

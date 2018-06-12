@@ -177,8 +177,11 @@ class Customer < ActiveRecord::Base
         if sales_order_items
             pickable_order=SalesOrder.create
             not_pickable_order=SalesOrder.create
+            non_inventory_items = []
             sales_order_items.each do |sales_order_item|
-                if sales_order_item.qty_pickable == 0
+                if !sales_order_item.is_inventory_item?
+                    non_inventory_items << sales_order_item
+                elsif sales_order_item.qty_pickable == 0
                     item=sales_order_item.dup
                     item.save
                     not_pickable_order.sales_order_items << item
@@ -194,6 +197,11 @@ class Customer < ActiveRecord::Base
                     not_pickable_order.sales_order_items << not_pickable_sales_order_item
                     self.order_consolidation.decrement_inventory(product_num: pickable_sales_order_item.product_num, qty: pickable_sales_order_item.qty_to_fulfill)
                 end
+            end
+            if pickable_order.sales_order_items.length > 0 
+                pickable_order.sales_order_items << non_inventory_items
+            else
+                not_pickable_order.sales_order_items << non_inventory_items
             end
             self.pickable_order = pickable_order
             self.not_pickable_order = not_pickable_order

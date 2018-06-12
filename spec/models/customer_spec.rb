@@ -1,10 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Customer, type: :model do
-
-    describe "create_sales_orders" do
-        
-    end
     
     describe "consolidated_line_items" do
 
@@ -78,7 +74,7 @@ RSpec.describe Customer, type: :model do
     
     end
     
-    describe "create_consolidated_orders" do
+    describe "consolidate_orders" do
         
         before :each do
             OrderConsolidation.skip_callback(:create, :after, :create_sales_orders)
@@ -126,6 +122,45 @@ RSpec.describe Customer, type: :model do
             expect(@product_4.reload.qty_pickable_from_fb).to eq(10)
         end
         
+        it "puts non inventory items on the not pickable order if there is no pickable order" do
+             #
+            sales_order_1.sales_order_items << create(:sales_order_item, product_num: 'shipping', qty_to_fulfill: 1, so_item_type_id: "60")
+            sales_order_1.sales_order_items << create(:sales_order_item, product_num: '3', qty_to_fulfill: 12)
+            #
+            customer.consolidate_orders
+            pickable_order=customer.pickable_order
+            not_pickable_order=customer.not_pickable_order
+            puts "CUSTOMER.orders: #{customer.sales_orders.inspect}"
+            puts "sales_order_1.sales_order_items: #{sales_order_1.sales_order_items.inspect}"
+            puts "sales_order_2.sales_order_items: #{sales_order_2.sales_order_items.inspect}"
+            puts "PICKABLE_ORDER: #{pickable_order.sales_order_items.inspect}"
+            puts "NOT PICKABLE_ORDER: #{not_pickable_order.sales_order_items.inspect}"
+            expect(pickable_order.sales_order_items.length).to eq(0)
+            expect(not_pickable_order.sales_order_items.length).to eq(2)
+            expect(not_pickable_order.sales_order_items.find {|x| x.product_num=='shipping'}.qty_to_fulfill).to eq(1)
+            expect(not_pickable_order.sales_order_items.find {|x| x.product_num=='3'}.qty_to_fulfill).to eq(12)
+        end
+        
+        it "puts non inventory items on the pickable order if there is a pickable order" do
+            #
+            sales_order_1.sales_order_items << create(:sales_order_item, product_num: 'shipping', qty_to_fulfill: 1, so_item_type_id: "60")
+            sales_order_1.sales_order_items << create(:sales_order_item, product_num: '1', qty_to_fulfill: 3)
+            sales_order_1.sales_order_items << create(:sales_order_item, product_num: '3', qty_to_fulfill: 12)
+            #
+            customer.consolidate_orders
+            pickable_order=customer.pickable_order
+            not_pickable_order=customer.not_pickable_order
+            puts "CUSTOMER.orders: #{customer.sales_orders.inspect}"
+            puts "sales_order_1.sales_order_items: #{sales_order_1.sales_order_items.inspect}"
+            puts "sales_order_2.sales_order_items: #{sales_order_2.sales_order_items.inspect}"
+            puts "PICKABLE_ORDER: #{pickable_order.sales_order_items.inspect}"
+            puts "NOT PICKABLE_ORDER: #{not_pickable_order.sales_order_items.inspect}"
+            expect(pickable_order.sales_order_items.length).to eq(2)
+            expect(not_pickable_order.sales_order_items.length).to eq(1)
+            expect(pickable_order.sales_order_items.find {|x| x.product_num=='shipping'}.qty_to_fulfill).to eq(1)
+            expect(pickable_order.sales_order_items.find {|x| x.product_num=='1'}.qty_to_fulfill).to eq(3)
+            expect(not_pickable_order.sales_order_items.find {|x| x.product_num=='3'}.qty_to_fulfill).to eq(12)
+        end
         
     end
     
