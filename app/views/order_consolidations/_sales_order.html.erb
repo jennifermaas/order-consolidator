@@ -1,4 +1,10 @@
 <table id="sales_order">
+    <div class="address">
+        <%= sales_order.bill_to_name %><br>
+        <%= sales_order.bill_to_address %><br>
+        <%= "#{sales_order.bill_to_city}, #{sales_order.bill_to_state} #{sales_order.bill_to_zip}" %><br>
+        <%= sales_order.bill_to_country %><br>
+    </div>
     <tr>
         <th>Product Number</th>
         <th>Qty to Fulfill</th>
