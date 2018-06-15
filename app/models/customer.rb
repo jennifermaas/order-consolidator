@@ -3,6 +3,7 @@ class Customer < ActiveRecord::Base
     has_many :sales_order_items, :through => :sales_orders
     belongs_to :order_consolidation
     validates_presence_of :fb_id
+    validates :account_number, uniqueness: { scope: :order_consolidation_id } 
     #validates_presence_of :name
     belongs_to :pickable_order, class_name: 'SalesOrder', foreign_key: "pickable_order_id", dependent: :destroy
     belongs_to :not_pickable_order, class_name: 'SalesOrder', foreign_key: "not_pickable_order_id", dependent: :destroy

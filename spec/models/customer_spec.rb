@@ -2,6 +2,15 @@ require 'rails_helper'
 
 RSpec.describe Customer, type: :model do
     
+    describe "create" do
+    
+        it "does not allow a customer with the same name and order_consolidation_id" do
+          customer=create(:customer, order_consolidation_id: 1, account_number: 'test')
+          customer2=Customer.create order_consolidation_id: customer.order_consolidation_id, account_number: customer.account_number, fb_id: '10'
+          expect(customer2).to_not be_valid
+        end
+    end
+    
     describe "consolidated_line_items" do
 
         let(:customer) {create(:customer)}

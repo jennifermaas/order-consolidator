@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180611194900) do
+ActiveRecord::Schema.define(version: 20180615030853) do
 
   create_table "customers", force: :cascade do |t|
     t.integer  "fb_id",                           limit: 4
@@ -25,6 +25,8 @@ ActiveRecord::Schema.define(version: 20180611194900) do
     t.boolean  "line_items_needed_consolidation",             default: false
     t.string   "account_number",                  limit: 255
   end
+
+  add_index "customers", ["account_number", "order_consolidation_id"], name: "index_customers_on_account_number_and_order_consolidation_id", unique: true, using: :btree
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   limit: 4,     default: 0, null: false
