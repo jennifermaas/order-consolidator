@@ -4,3 +4,11 @@
 require File.expand_path('../config/application', __FILE__)
 
 Rails.application.load_tasks
+
+namespace :consolidator do
+  task :create, [:path] => :environment do |t, args|
+    oc=OrderConsolidation.create
+    oc.run
+  end
+
+end
