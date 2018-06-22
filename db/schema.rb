@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180615030853) do
+ActiveRecord::Schema.define(version: 20180622100459) do
 
   create_table "customers", force: :cascade do |t|
     t.integer  "fb_id",                           limit: 4
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 20180615030853) do
     t.boolean  "needed_consolidation",                        default: false
     t.boolean  "line_items_needed_consolidation",             default: false
     t.string   "account_number",                  limit: 255
+    t.boolean  "has_committed",                               default: false
   end
 
   add_index "customers", ["account_number", "order_consolidation_id"], name: "index_customers_on_account_number_and_order_consolidation_id", unique: true, using: :btree
@@ -115,8 +116,8 @@ ActiveRecord::Schema.define(version: 20180615030853) do
     t.string   "num",                    limit: 255
     t.integer  "customer_id",            limit: 4
     t.text     "xml",                    limit: 16777215
-    t.datetime "created_at",                              null: false
-    t.datetime "updated_at",                              null: false
+    t.datetime "created_at",                                              null: false
+    t.datetime "updated_at",                                              null: false
     t.string   "customer_contact",       limit: 255
     t.string   "bill_to_name",           limit: 255
     t.string   "bill_to_address",        limit: 255
@@ -152,6 +153,7 @@ ActiveRecord::Schema.define(version: 20180615030853) do
     t.datetime "fulfillment_date"
     t.datetime "date"
     t.boolean  "ship_to_residential"
+    t.boolean  "committed",                               default: false
   end
 
   add_index "sales_orders", ["customer_id"], name: "index_sales_orders_on_customer_id", using: :btree

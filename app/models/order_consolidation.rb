@@ -23,6 +23,9 @@ class OrderConsolidation < ActiveRecord::Base
         create_message "Starting Create Sales Orders"
         create_sales_orders
         #
+        create_message "Checking for Committed Priority 3 Orders"
+        check_for_committed_priority_3_orders
+        #
         create_message "Starting Consolidate orders"
         consolidate_orders
         #
@@ -33,6 +36,34 @@ class OrderConsolidation < ActiveRecord::Base
         disconnect_from_fishbowl
       else
         create_message "Could not connect to fishbowl"
+      end
+    end
+    
+    def check_for_committed_priority_3_orders
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.request {
+          xml.PickQueryRq {
+            xml.Status "Committed"
+            xml.Priority "3-Normal"
+            xml.RecordCount "1000"
+            xml.PickType "Pick"
+          }
+        }
+      end
+      code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
+      order_numbers = []
+      response.xpath("//PickSearchItem").each do |sales_order_xml|
+          order_type_number = sales_order_xml.at_xpath("OrderTypeNumber").content
+          order_numbers << order_type_number[2..-1]
+      end
+      order_numbers.each do |order_number|
+        sales_order = self.sales_orders.find_by_num order_number
+        if sales_order
+          sales_order.committed=true
+          sales_order.save
+          sales_order.customer.has_committed=true
+          sales_order.customer.save
+        end
       end
     end
     
