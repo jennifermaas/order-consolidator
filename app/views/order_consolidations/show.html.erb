@@ -12,9 +12,4 @@
         <%= render customer %> 
     <% end %>
 </ul>
-<h2>DID NOT NEED CONSOLIDATION (<%= @order_consolidation.customers.did_not_need_consolidation.count %>)</h2>
-<ul class="customers">
-     <% @order_consolidation.customers.did_not_need_consolidation.each do |customer| %>
-        <%= render customer %> 
-    <% end %>
-</ul>
+<%= link_to "load orders that did not need consolidation >", "#", remote: true, id: "load_not_consolidated" %>
