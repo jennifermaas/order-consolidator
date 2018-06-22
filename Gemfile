@@ -25,7 +25,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 
 gem 'fishbowl', '>= 1.0', github: 'zion/fishbowl'
 
-gem 'delayed_job_active_record'
+#gem 'delayed_job_active_record'
 
 gem 'rails_12factor', group: :production
 
