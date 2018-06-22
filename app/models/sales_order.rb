@@ -5,6 +5,10 @@ class SalesOrder < ActiveRecord::Base
     has_one :customer_as_pickable, class_name: 'Customer', foreign_key: "pickable_order_id", dependent: :destroy
     has_one :customer_as_not_pickable, class_name: 'Customer', foreign_key: "not_pickable_order_id", dependent: :destroy
     
+    def is_consolidated?
+      self.customer_as_not_pickable || self.customer_as_pickable
+    end
+    
     def order_consolidation
       customer.order_consolidation
     end
