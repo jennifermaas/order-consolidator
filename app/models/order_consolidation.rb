@@ -63,6 +63,7 @@ class OrderConsolidation < ActiveRecord::Base
           sales_order.save
           sales_order.customer.has_committed=true
           sales_order.customer.save
+          create_message "Customer #{sales_order.customer.name} has a committed priority 3 order: #{sales_order.num}.  This customer will not be included in consolidation"
         end
       end
     end
@@ -215,7 +216,7 @@ class OrderConsolidation < ActiveRecord::Base
     end
     
     def consolidate_orders
-        customers.each do |customer|
+        customers.not_committed.each do |customer|
             if customer.needs_consolidation?
                 customer.update_attribute(:needed_consolidation,true)
                 customer.consolidate_orders

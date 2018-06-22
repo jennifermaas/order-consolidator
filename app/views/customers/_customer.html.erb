@@ -1,6 +1,9 @@
         <li>
             <h3><%= "#{customer.name} (id: #{customer.fb_id})" %></h3>
             <p class="status">Needed Consolidation? <%= customer.needed_consolidation %></p>
+            <% if customer.has_committed %>
+                <p class="status">This customer has a committed priority 3 order.  It will not be included in the consolidation</p>
+            <% end %>
             <p class="status">Line Items Needed Consolidation? <%= customer.line_items_needed_consolidation %></p>
             <h4>Original Orders (<%= customer.sales_orders.count %>)</h4>
             <ul class="sales_orders">

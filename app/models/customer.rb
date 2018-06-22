@@ -10,6 +10,7 @@ class Customer < ActiveRecord::Base
     
     scope :needed_consolidation, -> { where(needed_consolidation: true) }
     scope :did_not_need_consolidation, -> { where(needed_consolidation: false) }
+    scope :not_committed, -> {where(committed: false)}
     
     def create_sales_orders
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
