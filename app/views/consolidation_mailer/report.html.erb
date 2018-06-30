@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+      <head>
+            <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+      </head>
+      <body>
+            <% if @error %>
+                <h1>There was a fatal error creating or running the consolidation.  Jennifer has been sent an email about it.</h1>
+                <p><%= @error.to_s %></p>
+            <% else %>
+                <h1>New Order Consolidation</h1>
+            <% end %>
+            <% if @order_consolidation %>
+                <p>Started at <%= short_datetime @order_consolidation.created_at %></p>
+                <h2>ERRORS/MESSAGES</h2>
+                <ul id="messages" data-id="<%= @order_consolidation.id %>">
+                    <% @order_consolidation.messages.each do |message| %>
+                        <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
+                    <% end %>
+                </ul>
+                <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
+                <ul class="customers">
+                    <% @order_consolidation.customers.needed_consolidation.each do |customer| %>
+                        <%= render customer %> 
+                    <% end %>
+                </ul>
+            <% else %>
+                <p>Order Consolidation failed on creation</p>
+            <% end %>
+      </body>
+</html>

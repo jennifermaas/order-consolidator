@@ -7,8 +7,15 @@ Rails.application.load_tasks
 
 namespace :consolidator do
   task :create, [:path] => :environment do |t, args|
-    oc=OrderConsolidation.create
-    oc.run
+      begin
+        @order_consolidation=OrderConsolidation.create
+        raise "Order Consolidation was created but could not run"
+        @order_consolidation.run
+        ConsolidationMailer.report(order_consolidation_id: @order_consolidation.id).deliver_now
+      rescue => e 
+        oc_id = @order_consolidation ? @order_consolidation.id : 'nil'
+        ConsolidationMailer.report(error: e,order_consolidation_id: oc_id).deliver_now
+      end
   end
 
 end
