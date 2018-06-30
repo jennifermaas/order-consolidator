@@ -10,7 +10,7 @@
                 <% customer.sales_orders.each do |sales_order| %>
                     <li>
                         <h5>Order Num <%= sales_order.num %>: </h5>
-                        <%= render partial: "sales_order", object: sales_order %>
+                        <%= render partial: "order_consolidations/sales_order", object: sales_order %>
                     </li>  
                 <% end %>
             </ul>
@@ -19,11 +19,11 @@
                 <ul class="sales_orders">
                     <li>
                         <h5>Pickable Order:</h5>
-                        <%= render partial: "sales_order", object: customer.pickable_order if customer.pickable_order %>
+                        <%= render partial: "order_consolidations/sales_order", object: customer.pickable_order if customer.pickable_order %>
                     </li>  
                     <li>
                         <h5>Not Pickable Order:</h5> 
-                        <%= render partial: "sales_order", object: customer.not_pickable_order if customer.not_pickable_order %>
+                        <%= render partial: "order_consolidations/sales_order", object: customer.not_pickable_order if customer.not_pickable_order %>
                     </li>  
                 </ul>
             <% end %>
