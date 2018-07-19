@@ -2,6 +2,7 @@ class OrderConsolidationsController < ApplicationController
 
   def show
     @order_consolidation = OrderConsolidation.find_by_id params[:id]
+    @show_all = params[:show_all] ? true : false
   end
   
   def index
