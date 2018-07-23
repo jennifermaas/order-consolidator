@@ -32,11 +32,28 @@ class OrderConsolidation < ActiveRecord::Base
         create_message "Write Consolidated Orders to Fishbowl"
         write_consolidated_orders_to_fishbowl
         #
+        create_message "Send new available_to_pick to website"
+        send_available_to_pick_to_website
+        #
         create_message "Disconnecting From fishbowl"
         disconnect_from_fishbowl
       else
         create_message "Could not connect to fishbowl"
       end
+    end
+    
+    def send_available_to_pick_to_website
+      require 'net/http'
+      uri=URI.parse "http://lightintheattic.net/api/products/update_multiple.json?user_credentials=TvTCvb6c-kZFMza1kTdm"
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Put.new(uri.request_uri)
+      oc=self
+      products_array=oc.products.collect{|p| {quickbooks_product_number: p.num, available_to_pick: p.qty_pickable}}
+      products_json = { products: products_array }.to_json
+      request.body = products_json
+      request['Content-Type'] = 'application/json'
+      response = http.request(request)
+      puts response
     end
     
     def check_for_committed_priority_3_orders
