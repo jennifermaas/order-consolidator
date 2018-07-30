@@ -114,6 +114,7 @@ class OrderConsolidation < ActiveRecord::Base
     def write_consolidated_orders_to_fishbowl
 
       customers.needed_consolidation.each do |customer|
+        create_message "starting customer #{customer.name}"
         if customer.void_orders_in_fishbowl
           customer.write_orders_to_fishbowl
         else
