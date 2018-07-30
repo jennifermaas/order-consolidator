@@ -116,7 +116,9 @@ class OrderConsolidation < ActiveRecord::Base
       customers.needed_consolidation.each do |customer|
         create_message "starting customer #{customer.name}"
         if customer.void_orders_in_fishbowl
+          create_message "finished voids"
           customer.write_orders_to_fishbowl
+          create_message "finished writing orders"
         else
           create_message "customer #{customer.name} had a failed sale void, and following voids and creates were cancelled"
         end
