@@ -1,6 +1,22 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Light In The Attic API information
+  config.lita_api_url = "http://lightintheattic.net"
+  config.lita_api_user_credentials="TvTCvb6c-kZFMza1kTdm"
+  
+  # initializes Fishbowl Connection
+    Fishbowl.configure do |config|
+      config.username = "admin"
+      config.password = "litaadmin"
+      config.host = "66.171.181.94"
+      config.app_id = "1234"
+      config.app_name = "Fishbowl Ruby Gem"
+      config.app_description = "Fishbowl Ruby Gem"
+      config.debug = true
+    end
+
+
   # Code is not reloaded between requests.
   config.cache_classes = true
 

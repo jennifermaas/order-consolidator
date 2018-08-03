@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+      <head>
+            <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+      </head>
+      <body>
+            <% if @error %>
+                <h1>There was a fatal error creating or running the inventory sync.</h1>
+                <p><%= @error.to_s %></p>
+            <% else %>
+                <h1>New Inventory Sync</h1>
+            <% end %>
+            <% if @inventory_sync %>
+                <p>Started at <%= short_datetime @inventory_sync.created_at %></p>
+                <h2>ERRORS/MESSAGES</h2>
+                <ul id="messages" data-id="<%= @inventory_sync.id %>">
+                    <% @inventory_sync.messages.each do |message| %>
+                        <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
+                    <% end %>
+                </ul>
+            <% else %>
+                <p>Inventory Sync failed on creation</p>
+            <% end %>
+      </body>
+</html>

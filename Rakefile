@@ -18,3 +18,17 @@ namespace :consolidator do
   end
 
 end
+
+namespace :inventory_sync do
+  task :create, [:path] => :environment do |t, args|
+      begin
+        @inventory_sync=InventorySync.create
+        @inventory_sync.run
+        InventorySyncMailer.report(inventory_sync_id: @inventory_sync.id).deliver_now
+      rescue => e 
+        is_id = @inventory_sync ? @inventory_sync.id : 'nil'
+        InventorySyncMailer.report(error: e,inventory_sync: is_id).deliver_now
+      end
+  end
+
+end

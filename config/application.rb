@@ -8,17 +8,6 @@ Bundler.require(*Rails.groups)
 
 module Workspace
   class Application < Rails::Application
-    # initializes Fishbowl Connection
-    Fishbowl.configure do |config|
-      config.username = "admin"
-      config.password = "litaadmin"
-      #config.host = "35.169.125.206"
-      config.host = "66.171.181.94"
-      config.app_id = "1234"
-      config.app_name = "Fishbowl Ruby Gem"
-      config.app_description = "Fishbowl Ruby Gem"
-      config.debug = true
-    end
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

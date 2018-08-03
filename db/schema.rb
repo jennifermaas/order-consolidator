@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180622100459) do
+ActiveRecord::Schema.define(version: 20180727223918) do
 
   create_table "customers", force: :cascade do |t|
     t.integer  "fb_id",                           limit: 4
@@ -54,11 +54,17 @@ ActiveRecord::Schema.define(version: 20180622100459) do
     t.datetime "updated_at",              null: false
   end
 
+  create_table "inventory_syncs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "messages", force: :cascade do |t|
     t.integer  "order_consolidation_id", limit: 4
     t.text     "body",                   limit: 65535
     t.datetime "created_at",                           null: false
     t.datetime "updated_at",                           null: false
+    t.integer  "inventory_sync_id",      limit: 4
   end
 
   add_index "messages", ["order_consolidation_id"], name: "index_messages_on_order_consolidation_id", using: :btree
@@ -79,8 +85,11 @@ ActiveRecord::Schema.define(version: 20180622100459) do
     t.integer  "qty_on_hand",            limit: 4,   default: 0
     t.integer  "qty_committed",          limit: 4,   default: 0
     t.integer  "qty_not_pickable",       limit: 4,   default: 0
+    t.integer  "inventory_sync",         limit: 4
+    t.integer  "inventory_sync_id",      limit: 4
   end
 
+  add_index "products", ["num", "inventory_sync_id"], name: "index_products_on_num_and_inventory_sync_id", using: :btree
   add_index "products", ["num", "order_consolidation_id"], name: "index_products_on_num_and_order_consolidation_id", using: :btree
   add_index "products", ["num"], name: "index_products_on_num", using: :btree
   add_index "products", ["order_consolidation_id"], name: "index_products_on_order_consolidation_id", using: :btree

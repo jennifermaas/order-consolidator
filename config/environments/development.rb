@@ -1,6 +1,21 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Light In The Attic API information
+  config.lita_api_url = "http://lita-refresh.herokuapp.com"
+  config.lita_api_user_credentials="RUSB3XkR6qmzy1A22Ko3"
+  
+  # initializes Fishbowl Connection
+    Fishbowl.configure do |config|
+      config.username = "admin"
+      config.password = "litaadmin"
+      config.host = "35.169.125.206"
+      config.app_id = "1234"
+      config.app_name = "Fishbowl Ruby Gem"
+      config.app_description = "Fishbowl Ruby Gem"
+      config.debug = true
+    end
+
   # In the development environment your application's code is reloaded on
   # every request. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
@@ -35,6 +50,9 @@ Rails.application.configure do
   # Checks for improperly declared sprockets dependencies.
   # Raises helpful error messages.
   config.assets.raise_runtime_errors = true
+  
+  # Configuration for Lita website API
+  config.lita_update_products_url="http://notanewmacbook-jennifermaas.c9users.io/api/products/update_multiple.json?user_credentials=0UDCSYMCz7DWxBCx4kp"
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
