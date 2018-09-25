@@ -247,7 +247,8 @@ class Customer < ActiveRecord::Base
                                   AND NOT (customer.name LIKE '%Border%')
                                   AND NOT (customer.name LIKE '%Southbound%')
                                   AND NOT (customer.name LIKE '%Cobraside%')
-                                  AND NOT (customer.name LIKE '%Tsunami%')"
+                                  AND NOT (customer.name LIKE '%Tsunami%')
+                                  AND NOT (customer.name LIKE '%Pop Up Event%')"
             }
           }
         end
