@@ -19,7 +19,7 @@
                         <li><%= @order_consolidation.messages.last.body %> (<%= short_datetime(@order_consolidation.messages.last.created_at) %>)</li>
                     <% end %>
                     <% @order_consolidation.messages.each do |message| %>
-                        <% if message.body.include? 'fail'
+                        <% if message.body.include? 'fail' %>
                             <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
                         <% end %>
                     <% end %>
