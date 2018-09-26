@@ -12,16 +12,28 @@
             <% end %>
             <% if @order_consolidation %>
                 <p>Started at <%= short_datetime @order_consolidation.created_at %></p>
-                <h2>ERRORS/MESSAGES</h2>
+                <h2>ERRORS</h2>
                 <ul id="messages" data-id="<%= @order_consolidation.id %>">
+                    <% if (@order_consolidation.messages && @order_consolidation.messages.last && (@order_consolidation.messages.last.body.include? "starting customer")) %>
+                        <li>Consolidation failed in the middle of a write to FB.  Here is the last line:</li>
+                        <li><%= @order_consolidation.messages.last.body %> (<%= short_datetime(@order_consolidation.messages.last.created_at) %>)</li>
+                    <% end %>
                     <% @order_consolidation.messages.each do |message| %>
-                        <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
+                        <% if message.body.include? 'fail'
+                            <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
+                        <% end %>
                     <% end %>
                 </ul>
                 <h2>NEEDED CONSOLIDATION (<%= @order_consolidation.customers.needed_consolidation.count %>)</h2>
                 <ul class="customers">
                     <% @order_consolidation.customers.needed_consolidation.each do |customer| %>
                         <%= render customer %> 
+                    <% end %>
+                </ul>
+                <h2>ALL MESSAGES</h2>
+                <ul id="messages" data-id="<%= @order_consolidation.id %>">
+                    <% @order_consolidation.messages.each do |message| %>
+                        <li><%= message.body %> (<%= short_datetime(message.created_at) %>)</li>
                     <% end %>
                 </ul>
             <% else %>
