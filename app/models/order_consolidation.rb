@@ -25,11 +25,11 @@ class OrderConsolidation < ActiveRecord::Base
         create_message "Starting Consolidate orders"
         consolidate_orders
         #
-        create_message "Write Consolidated Orders to Fishbowl"
-        write_consolidated_orders_to_fishbowl
+        #create_message "Write Consolidated Orders to Fishbowl"
+        #write_consolidated_orders_to_fishbowl
         #
-        create_message "Send new available_to_pick to website"
-        send_available_to_pick_to_website
+        #create_message "Send new available_to_pick to website"
+        #send_available_to_pick_to_website
         #
         create_message "Disconnecting From fishbowl"
         disconnect_from_fishbowl
