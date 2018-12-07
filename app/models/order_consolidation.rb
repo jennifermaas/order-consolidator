@@ -282,7 +282,7 @@ class OrderConsolidation < ActiveRecord::Base
       response.xpath("//Row")[1..-1].each do |row|
         row_array=row.content.parse_csv
         unless previous_customer_name == row_array[1]
-          customer = Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: order_consolidation)
+          customer = Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: self)
           previous_customer_name = row_array[1]
         end
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
