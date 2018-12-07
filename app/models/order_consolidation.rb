@@ -282,9 +282,10 @@ class OrderConsolidation < ActiveRecord::Base
       response.xpath("//Row")[1..-1].each do |row|
         row_array=row.content.parse_csv
         unless previous_customer_name == row_array[1]
-          customer = Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: self)
+          @customer = Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: self)
           previous_customer_name = row_array[1]
         end
+        logger.info "***** @customer = #{@customer.inspect} "
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
           xml.request {
             xml.LoadSORq {
@@ -296,7 +297,7 @@ class OrderConsolidation < ActiveRecord::Base
         sales_order_params = {}
         response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
             sales_order_params["num"]=sales_order_xml.at_xpath("Number").try(:content)
-            sales_order_params["customer_id"]=customer.id
+            sales_order_params["customer_id"]=@customer.id
             sales_order_params["customer_contact"]=sales_order_xml.at_xpath("CustomerContact").try(:content).force_encoding('iso-8859-1').encode('utf-8')
             sales_order_params["bill_to_name"]=sales_order_xml.at_xpath("BillTo//Name").try(:content).force_encoding('iso-8859-1').encode('utf-8')
             sales_order_params["bill_to_address"]=sales_order_xml.at_xpath("BillTo//AddressField").try(:content).force_encoding('iso-8859-1').encode('utf-8')
