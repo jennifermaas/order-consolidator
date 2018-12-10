@@ -26,7 +26,7 @@ class OrderConsolidation < ActiveRecord::Base
         consolidate_orders
         #
         #create_message "Write Consolidated Orders to Fishbowl"
-        #write_consolidated_orders_to_fishbowl
+        write_consolidated_orders_to_fishbowl
         #
         #create_message "Send new available_to_pick to website"
         #send_available_to_pick_to_website
