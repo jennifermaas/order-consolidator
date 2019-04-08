@@ -242,6 +242,7 @@ class Customer < ActiveRecord::Base
                                   AND NOT (customer.name LIKE '%PIAS%')
                                   AND NOT (customer.name LIKE '%Inertia%')
                                   AND NOT (customer.name = 'Revolver')
+                                  AND NOT (customer.name = 'Revolver USA')
                                   AND NOT (customer.name LIKE '%Outside%')
                                   AND NOT (customer.name LIKE '%SRD%')
                                   AND NOT (customer.name LIKE '%Border%')
