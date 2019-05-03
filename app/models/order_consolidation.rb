@@ -260,9 +260,11 @@ class OrderConsolidation < ActiveRecord::Base
                           AND NOT (customer.name LIKE '%Alliance%')
                           AND NOT (customer.name LIKE '%All Media Supply%')
                           AND NOT (customer.name LIKE '%Baker%')
+                          AND NOT (customer.name LIKE '%Border Music Distribution%')
                           AND NOT (customer.name LIKE '%PROMO%')
                           AND NOT (customer.name LIKE '%LITA Store%')
                           AND NOT (customer.name LIKE '%Cargo%')
+                          AND NOT (customer.name LIKE '%Goodfellas%')
                           AND NOT (customer.name LIKE '%PIAS%')
                           AND NOT (customer.name LIKE '%Inertia%')
                           AND NOT (customer.name = 'Revolver')
@@ -273,7 +275,8 @@ class OrderConsolidation < ActiveRecord::Base
                           AND NOT (customer.name LIKE '%Southbound%')
                           AND NOT (customer.name LIKE '%Cobraside%')
                           AND NOT (customer.name LIKE '%Tsunami%')
-                          AND NOT (customer.name LIKE '%Pop Up Event%')
+                          AND NOT (customer.name LIKE '%Sunami%')
+                          AND NOT (customer.name LIKE '%Pop Up Event%')"
                         ORDER BY customer.name"
           }
         }

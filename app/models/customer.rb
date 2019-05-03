@@ -118,9 +118,20 @@ class Customer < ActiveRecord::Base
             }
           }
         end
-        code,response=Fishbowl::Objects::BaseObject.new.send_request(builder, 'ImportRq')
-        if response.xpath("//ImportRs/@statusCode").first.value != "1000"
-            self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+        try_count=1
+        attempt_write=true
+        while (try_count <= 4) and attempt_write do
+            code,response=Fishbowl::Objects::BaseObject.new.send_request(builder, 'ImportRq')
+            if response.xpath("//ImportRs/@statusCode").first.value == "1500"
+                self.order_consolidation.create_message "Import failed for customer (try #{try_count}/3): #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+                try_count=try_count + 1
+                attempt_write= true
+                self.order_consolidation.disconnect_from_fishbowl
+                self.order_consolidation.connect_to_fishbowl
+            elsif response.xpath("//ImportRs/@statusCode").first.value != "1000"
+                self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+                attempt_write= false
+            end
         end
     end
     
@@ -236,9 +247,11 @@ class Customer < ActiveRecord::Base
                                   AND NOT (customer.name LIKE '%Alliance%')
                                   AND NOT (customer.name LIKE '%All Media Supply%')
                                   AND NOT (customer.name LIKE '%Baker%')
+                                  AND NOT (customer.name LIKE '%Border Music Distribution%')
                                   AND NOT (customer.name LIKE '%PROMO%')
                                   AND NOT (customer.name LIKE '%LITA Store%')
                                   AND NOT (customer.name LIKE '%Cargo%')
+                                  AND NOT (customer.name LIKE '%Goodfellas%')
                                   AND NOT (customer.name LIKE '%PIAS%')
                                   AND NOT (customer.name LIKE '%Inertia%')
                                   AND NOT (customer.name = 'Revolver')
@@ -249,6 +262,7 @@ class Customer < ActiveRecord::Base
                                   AND NOT (customer.name LIKE '%Southbound%')
                                   AND NOT (customer.name LIKE '%Cobraside%')
                                   AND NOT (customer.name LIKE '%Tsunami%')
+                                  AND NOT (customer.name LIKE '%Sunami%')
                                   AND NOT (customer.name LIKE '%Pop Up Event%')"
             }
           }
