@@ -85,7 +85,7 @@ class OrderConsolidation < ActiveRecord::Base
     def connect_to_fishbowl
       begin 
         Fishbowl::Connection.connect
-        Fishbowl::Connection.login
+        Fishbowl::Connection.connect
       rescue Errno::ETIMEDOUT
         Message.create order_consolidation: self, body: 'Connection to Fishbowl timed out.'
         return false
@@ -276,7 +276,7 @@ class OrderConsolidation < ActiveRecord::Base
                           AND NOT (customer.name LIKE '%Cobraside%')
                           AND NOT (customer.name LIKE '%Tsunami%')
                           AND NOT (customer.name LIKE '%Sunami%')
-                          AND NOT (customer.name LIKE '%Pop Up Event%')"
+                          AND NOT (customer.name LIKE '%Pop Up Event%')
                         ORDER BY customer.name"
           }
         }
