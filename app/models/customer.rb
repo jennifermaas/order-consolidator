@@ -131,6 +131,8 @@ class Customer < ActiveRecord::Base
             elsif response.xpath("//ImportRs/@statusCode").first.value != "1000"
                 self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
                 attempt_write= false
+            else
+                attempt_write=false
             end
         end
     end
