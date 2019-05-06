@@ -85,7 +85,7 @@ class OrderConsolidation < ActiveRecord::Base
     def connect_to_fishbowl
       begin 
         Fishbowl::Connection.connect
-        Fishbowl::Connection.connect
+        Fishbowl::Connection.login
       rescue Errno::ETIMEDOUT
         Message.create order_consolidation: self, body: 'Connection to Fishbowl timed out.'
         return false
