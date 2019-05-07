@@ -118,22 +118,13 @@ class Customer < ActiveRecord::Base
             }
           }
         end
-        try_count=1
-        attempt_write=true
-        while (try_count <= 4) and attempt_write do
-            code,response=Fishbowl::Objects::BaseObject.new.send_request(builder, 'ImportRq')
-            if response.xpath("//ImportRs/@statusCode").first.value == "1500"
-                self.order_consolidation.create_message "Import failed for customer (try #{try_count}/3): #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
-                try_count=try_count + 1
-                attempt_write= true
-                self.order_consolidation.disconnect_from_fishbowl
-                self.order_consolidation.connect_to_fishbowl
-            elsif response.xpath("//ImportRs/@statusCode").first.value != "1000"
-                self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
-                attempt_write= false
-            else
-                attempt_write=false
-            end
+        code,response=Fishbowl::Objects::BaseObject.new.send_request(builder, 'ImportRq')
+        if response.xpath("//ImportRs/@statusCode").first.value == "1500"
+            self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+        elsif response.xpath("//ImportRs/@statusCode").first.value != "1000"
+            self.order_consolidation.create_message "Import failed for customer: #{self.name}.  #{response.xpath("//ImportRs/@statusMessage").first.value}"
+        else
+            self.order_consolidation.create_message "Import successful for customer: #{self.name}"
         end
     end
     
