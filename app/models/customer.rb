@@ -237,7 +237,6 @@ class Customer < ActiveRecord::Base
                                 FROM so inner join customer on so.customerId=customer.id  
                                 WHERE So.statusId IN (20,25) 
                                   AND (So.customerId NOT IN (328,1603,333,758,1576,1319,1427,1365)) 
-                                  AND NOT (customer.name LIKE '%Alliance%')
                                   AND NOT (customer.name LIKE '%All Media Supply%')
                                   AND NOT (customer.name LIKE '%Baker%')
                                   AND NOT (customer.name LIKE '%Border Music Distribution%')
