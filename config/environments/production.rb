@@ -9,7 +9,7 @@ Rails.application.configure do
     Fishbowl.configure do |config|
       config.username = "admin"
       config.password = "litaadmin"
-      config.host = "65.122.177.163"
+      config.host = "207.53.240.231"
       config.app_id = "1234"
       config.app_name = "Fishbowl Ruby Gem"
       config.app_description = "Fishbowl Ruby Gem"
