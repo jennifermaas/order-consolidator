@@ -292,7 +292,7 @@ class OrderConsolidation < ActiveRecord::Base
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
           xml.request {
             xml.GetSOListRq {
-              xml.Number "#{row_array[3]}"
+              xml.SONum "#{row_array[3]}"
             }
           }
         end
