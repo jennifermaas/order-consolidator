@@ -291,7 +291,7 @@ class OrderConsolidation < ActiveRecord::Base
         logger.info "***** @customer = #{@customer.inspect} "
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
           xml.request {
-            xml.LoadSORq {
+            xml.GetSOListRq {
               xml.Number "#{row_array[3]}"
             }
           }
