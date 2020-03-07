@@ -27,3 +27,5 @@ production:
   timeout: 5000
   encoding: utf8
   collation: utf8_general_ci
+  sslmode: 'REQUIRED'
+  sslca: /config/rds-combined-ca-bundle.pem
