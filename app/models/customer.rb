@@ -12,6 +12,14 @@ class Customer < ActiveRecord::Base
     scope :did_not_need_consolidation, -> { where(needed_consolidation: false) }
     scope :not_committed, -> {where(has_committed: false)}
     
+    def as_json
+        {
+            name: self.name,
+            pickable_order: pickable_order.as_json,
+            not_pickable_order: not_pickable_order.as_json
+        }
+    end
+    
     def create_sales_orders
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
             xml.request {
@@ -26,7 +34,7 @@ class Customer < ActiveRecord::Base
           code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "ProductGetRs")
           sales_order_params = {}
           response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            unless (sales_order_xml.xpath("PriorityId").inner_html[0]=="5") || (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R") || (sales_order_xml.xpath("Number").inner_html[0]=="@")
+            unless (sales_order_xml.xpath("PriorityId").inner_html[0]!="3") || (sales_order_xml.xpath("Number").inner_html[0]=="G") || (sales_order_xml.xpath("Number").inner_html[0]=="g") || (sales_order_xml.xpath("Status").inner_html=="10") || (sales_order_xml.xpath("Number").inner_html[0]=="R") || (sales_order_xml.xpath("Number").inner_html[0]=="@")
               sales_order_params["num"]=sales_order_xml.at_xpath("Number").try(:content)
               sales_order_params["customer_id"]=self.id
               sales_order_params["customer_contact"]=sales_order_xml.at_xpath("CustomerContact").try(:content).force_encoding('iso-8859-1').encode('utf-8')
@@ -80,6 +88,7 @@ class Customer < ActiveRecord::Base
                 sales_order_item_params["quickbooks_class_name"]=sales_order_item_xml.at_xpath("QuickBooksClassName").try(:content)
                 sales_order_item_params["show_item"]=sales_order_item_xml.at_xpath("ShowItemFlag").try(:content)
                 sales_order_item_params["revision_level"]=sales_order_item_xml.at_xpath("RevisionLevel").try(:content)
+                sales_order_item_params["kit_item"]=sales_order_item_xml.at_xpath("KitItem").try(:content)
                 sales_order_item=SalesOrderItem.create(sales_order_item_params)
               end
             end
@@ -255,7 +264,8 @@ class Customer < ActiveRecord::Base
                                   AND NOT (customer.name LIKE '%Cobraside%')
                                   AND NOT (customer.name LIKE '%Tsunami%')
                                   AND NOT (customer.name LIKE '%Sunami%')
-                                  AND NOT (customer.name LIKE '%Pop Up Event%')"
+                                  AND NOT (customer.name LIKE '%Pop Up Event%')
+                                  AND NOT (customer.name LIKE '%Bandcamp Sales%')"
             }
           }
         end

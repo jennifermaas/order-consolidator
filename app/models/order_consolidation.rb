@@ -276,6 +276,7 @@ class OrderConsolidation < ActiveRecord::Base
                           AND NOT (customer.name LIKE '%Tsunami%')
                           AND NOT (customer.name LIKE '%Sunami%')
                           AND NOT (customer.name LIKE '%Pop Up Event%')
+                          AND NOT (customer.name LIKE '%Bandcamp Sales%')
                         ORDER BY customer.name"
           }
         }
