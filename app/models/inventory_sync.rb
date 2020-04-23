@@ -12,8 +12,8 @@ class InventorySync < ActiveRecord::Base
         create_inventory
         create_message "Products Found: #{self.products.count}"
         #
-        create_message "Send Available to Pick to Website"
-        send_available_to_pick_to_website
+        create_message "Send On Hand to Website"
+        send_on_hand_website
         #
         create_message "Disconnecting From fishbowl"
         disconnect_from_fishbowl
@@ -21,6 +21,20 @@ class InventorySync < ActiveRecord::Base
         create_message "Could not connect to fishbowl"
       end
     end
+    
+    def send_on_hand_website
+      require 'net/http'
+      uri=URI.parse "#{Rails.configuration.lita_api_url}/api/products/update_multiple.json?user_credentials=#{Rails.configuration.lita_api_user_credentials}"
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Put.new(uri.request_uri)
+      products_array=self.products.collect{|p| {quickbooks_product_number: p.num, on_hand: p.qty_on_hand}}
+      products_json = { products: products_array }.to_json
+      request.body = products_json
+      request['Content-Type'] = 'application/json'
+      response = http.request(request)
+      puts response
+    end
+    
     
     
     def send_available_to_pick_to_website
