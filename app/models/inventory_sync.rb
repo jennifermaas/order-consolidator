@@ -1,5 +1,6 @@
 class InventorySync < ActiveRecord::Base
     has_many :products
+    has_many :messages
     
     def create_message(body)
       Message.create inventory_sync: self, body: body
