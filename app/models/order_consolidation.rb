@@ -285,22 +285,24 @@ class OrderConsolidation < ActiveRecord::Base
       previous_customer_name=""
       response.xpath("//Row")[1..-1].each do |row|
         row_array=row.content.parse_csv
+        
         unless previous_customer_name == row_array[1]
           @customer = Customer.create(fb_id: row_array[0], name: row_array[1], account_number: row_array[2], order_consolidation: self)
           previous_customer_name = row_array[1]
         end
         logger.info "***** @customer = #{@customer.inspect} "
+        order_number="#{row_array[3]}"
         builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
           xml.request {
             xml.GetSOListRq {
-              xml.SONum "#{row_array[3]}"
+              xml.SONum order_number
             }
           }
         end
         code, response = Fishbowl::Objects::BaseObject.new.send_request(builder, "GetSOListRq")
         sales_order_params = {}
         response.xpath("FbiXml//SalesOrder").each do |sales_order_xml|
-            if sales_order_xml.at_xpath("CustomerID").try(:content).force_encoding('iso-8859-1').encode('utf-8')==@customer.account_number.to_s
+            if sales_order_xml.at_xpath("Number").try(:content).force_encoding('iso-8859-1').encode('utf-8')==order_number
               sales_order_params["num"]=sales_order_xml.at_xpath("Number").try(:content)
               sales_order_params["customer_id"]=@customer.id
               sales_order_params["customer_contact"]=sales_order_xml.at_xpath("CustomerContact").try(:content).force_encoding('iso-8859-1').encode('utf-8')
