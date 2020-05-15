@@ -20,9 +20,9 @@ test:
 production:
   adapter: mysql2
   database: order_consolidator_production
-  username: lita
+  username: admin
   password: litarox!
-  host: consolidator.czxwwmzpquwp.us-east-1.rds.amazonaws.com
+  host: new-order-consolidator-instance-1.czxwwmzpquwp.us-east-1.rds.amazonaws.com
   pool: 5
   timeout: 5000
   encoding: utf8
