@@ -1,9 +1,9 @@
 GIT
-  remote: git://github.com/zion/fishbowl.git
-  revision: c6188ff88d9e6f0bc17839a1b9469bff230007a3
+  remote: https://github.com/zion/fishbowl.git
+  revision: fe7508bf66e416c055c6de4297b402155201b62f
   specs:
-    fishbowl (1.0)
-      nokogiri (~> 1.7)
+    fishbowl (1.0.2)
+      nokogiri (>= 1.8.5)
 
 GEM
   remote: https://rubygems.org/
@@ -56,6 +56,7 @@ GEM
       execjs
     coffee-script-source (1.12.2)
     concurrent-ruby (1.0.5)
+    crass (1.0.6)
     debug_inspector (0.0.3)
     delayed_job (4.1.5)
       activesupport (>= 3.0, < 5.3)
@@ -82,19 +83,20 @@ GEM
       railties (>= 4.2.0)
       thor (>= 0.14, < 2.0)
     json (1.8.6)
-    loofah (2.0.3)
+    loofah (2.19.1)
+      crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
-    mini_portile2 (2.2.0)
+    mini_portile2 (2.4.0)
     minitest (5.10.3)
     multi_json (1.12.1)
     mysql2 (0.4.10)
-    nokogiri (1.8.0)
-      mini_portile2 (~> 2.2.0)
+    nokogiri (1.10.10)
+      mini_portile2 (~> 2.4.0)
     rack (1.6.8)
     rack-test (0.6.3)
       rack (>= 1.0)
